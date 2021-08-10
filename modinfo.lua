@@ -1,11 +1,11 @@
 name = "G10MM-3R"
-description = "Automate gathering resources!\nVersion: 1.35\n\nChangelog:\n- G10MM-3R cannot be built on boats anymore (to prevent crashes)."
-author = "<default>"
-version = "1.35"
+description = "Automate gathering resources!"
+author = "<default>, oblivioncth"
+version = "1.35.01"
 
 forumthread = "https://steamcommunity.com/sharedfiles/filedetails/?id=1628298090"
 
-api_version = 10
+api_version_dst = 0xa
 
 dst_compatible = true
 dont_starve_compatible = false

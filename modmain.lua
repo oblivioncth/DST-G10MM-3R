@@ -92,6 +92,8 @@ local TUNING = GLOBAL.TUNING
 local ACTIONS = GLOBAL.ACTIONS
 local ActionHandler = GLOBAL.ActionHandler
 
+
+
 GLOBAL.ROBOBEE_HARVEST = GetModConfigData("whentoharvest")
 
 GLOBAL.ROBOBEE_MOVESPEED = GetModConfigData("robobee_speed")
@@ -179,8 +181,11 @@ AddMinimapAtlas("images/map_icons/statuerobobee_map_icebox_caterpillar.xml")
 AddMinimapAtlas("images/map_icons/statuerobobee_map_full_icebox_caterpillar.xml")
 AddMinimapAtlas("images/map_icons/robobee_caterpillar.xml")
 
+-- OBBY: Combinding of previous two AddComponentPostInit uses into one, and fix for newer Pick which (sometimes) returns a value
 AddComponentPostInit("pickable", function(Pickable)
 	local OldPick = Pickable.Pick
+	local OldRegen = Pickable.Regen
+
 	Pickable.Pick = function(self, picker, ...)
 		if self.inst and picker ~= nil and not picker:HasTag("robobee") and self.inst.robobee_picker ~= nil then
 			self.inst.robobee_picker.pickable_target = nil
@@ -200,14 +205,10 @@ AddComponentPostInit("pickable", function(Pickable)
 			end
 		end) -- crappy hacky way to prevent bee targeting bug
 		
-		OldPick(self, picker, ...)
+		return OldPick(self, picker, ...)
 	end
-end)
 
-AddComponentPostInit("pickable", function(Pickable)
-	local OldRegen = Pickable.Regen
 	Pickable.Regen = function(self, ...)
-	
 		if self.inst and self.inst:IsValid() then
 			if self.inst:HasTag("robobee_target") then
 				self.inst:RemoveTag("robobee_target")
@@ -221,10 +222,12 @@ AddComponentPostInit("pickable", function(Pickable)
 	end
 end)
 
+-- OBBY: Simplification of function args and combinding of previous two AddComponentPostInit uses into one
 AddComponentPostInit("inventoryitem", function(Inventoryitem)
 	local OldOnPutInInventory = Inventoryitem.OnPutInInventory
-	Inventoryitem.OnPutInInventory = function(self, owner, ...)
-	
+	local OldOnDropped = Inventoryitem.OnDropped
+
+	Inventoryitem.OnPutInInventory = function(self, ...)
 		if self.inst.robobee_picker ~= nil then
 			if self.inst.robobee_picker.pickable_target ~= nil then
 				self.inst.robobee_picker.pickable_target = nil
@@ -246,14 +249,10 @@ AddComponentPostInit("inventoryitem", function(Inventoryitem)
 			self.inst:RemoveTag("robobee_target")
 		end
 		
-		OldOnPutInInventory(self, owner, ...)
+		OldOnPutInInventory(self, ...)
 	end
-end)
 
-AddComponentPostInit("inventoryitem", function(Inventoryitem)
-	local OldOnDropped = Inventoryitem.OnDropped
-	Inventoryitem.OnDropped = function(self, randomdir, speedmult, ...)
-	
+	Inventoryitem.OnDropped = function(self, ...)
 		if self.inst.wasmadeclear ~= nil and self.inst.wasmadeclear == true and self.inst.AnimState then
 			self.inst.AnimState:OverrideMultColour(1, 1, 1, 1)
 			self.inst.wasmadeclear = nil
@@ -271,34 +270,35 @@ AddComponentPostInit("inventoryitem", function(Inventoryitem)
 			--self.inst.originalcolour = nil
 		--end
 		
-		OldOnDropped(self, randomdir, speedmult, ...)
+		OldOnDropped(self, ...)
 	end
 end)
 
+-- OBBY: Simplification of function args
 AddComponentPostInit("spellcaster", function(SpellCaster)
 	local OldCanCast = SpellCaster.CanCast
-	SpellCaster.CanCast = function(self, doer, target, pos, ...)
+	SpellCaster.CanCast = function(self, doer, target, ...)
 	
 		if target ~= nil and target:HasTag("robobee") then
-			-- Keep that dirty magic away from my pure bee!
+			-- Keep that dir ty magic away from my pure bee!
 			return false
 		else
-			return OldCanCast(self, doer, target, pos, ...)
+			return OldCanCast(self, doer, target, ...)
 		end
 
 	end
 end)
 
+-- OBBY: Fix for newer ReleaseAllChildren that returns a value, simplification of function args
 AddComponentPostInit("childspawner", function(ChildSpawner)
 	local OldReleaseAllChildren = ChildSpawner.ReleaseAllChildren
-	ChildSpawner.ReleaseAllChildren = function(self, target, prefab, ...)
+	ChildSpawner.ReleaseAllChildren = function(self, target, ...)
 	
 	-- Don't release children if robobee is the target
 	-- Yes, I had to edit the component, because beebox is not very mod-friendly
 		if target == nil or target ~= nil and not target:HasTag("robobee") then
-			OldReleaseAllChildren(self, target, prefab, ...)
+			return OldReleaseAllChildren(self, target, ...) 
 		end
-
 	end
 end)
 
@@ -330,7 +330,7 @@ if GetModConfigData("excludeitemsconfig") ~= 4 then
 		"petals_evil",
 		"foliage",
 		"lightbulb",}
-	for k,v in pairs(plants_shrooms) do AddPrefabPostInit(v, RobobeePickableItems) end
+	for _,v in ipairs(plants_shrooms) do AddPrefabPostInit(v, RobobeePickableItems) end
 end
 	
 if GetModConfigData("excludeitemsconfig") ~= 3 then
@@ -349,7 +349,7 @@ if GetModConfigData("excludeitemsconfig") ~= 3 then
 		"bird_egg",
 		"tallbirdegg",
 		"froglegs",}
-	for k,v in pairs(meats_eggs) do AddPrefabPostInit(v, RobobeePickableItems) end
+	for _,v in ipairs(meats_eggs) do AddPrefabPostInit(v, RobobeePickableItems) end
 end
 
 local manure =
@@ -357,7 +357,7 @@ local manure =
 	"guano",
 	"spoiled_food",
 	"glommerfuel",}
-for k,v in pairs(manure) do AddPrefabPostInit(v, RobobeePickableItems) end
+for _,v in ipairs(manure) do AddPrefabPostInit(v, RobobeePickableItems) end
 	
 local resources =
 	{"cutreeds",
@@ -376,7 +376,7 @@ local resources =
 	"twiggy_nut",
 	"spidergland",
 	"silk",}
-for k,v in pairs(resources) do AddPrefabPostInit(v, RobobeePickableItems) end
+for _,v in ipairs(resources) do AddPrefabPostInit(v, RobobeePickableItems) end
 	
 local other =
 	{"charcoal",
@@ -389,7 +389,7 @@ local other =
 	"slurper_pelt",
 	"houndstooth",
 	"beefalowool"}
-for k,v in pairs(other) do AddPrefabPostInit(v, RobobeePickableItems) end
+for _,v in ipairs(other) do AddPrefabPostInit(v, RobobeePickableItems) end
 
 ---
 
@@ -407,7 +407,7 @@ if GetModConfigData("excludeitemsconfig") == 2 then
 		"succulent_plant",
 		"flower_rose",
 		"flower_withered",}
-	for k,v in pairs(flowers) do AddPrefabPostInit(v, RobobeeExcludedItems) end
+	for _,v in ipairs(flowers) do AddPrefabPostInit(v, RobobeeExcludedItems) end
 end
 
 if GetModConfigData("excludeitemsconfig") == 3 then
@@ -446,7 +446,7 @@ if GetModConfigData("robobeetechconfig") == 1 then
 		end
 	end 
 	local bosses = {"dragonfly", "beequeen"}
-	for k,v in pairs(bosses) do AddPrefabPostInit(v, RaidBossesRecipeDropPostInit) end
+	for _,v in ipairs(bosses) do AddPrefabPostInit(v, RaidBossesRecipeDropPostInit) end
 
 	function ClockworkJunkRecipeDropPostInit(inst)
 		if GLOBAL.TheWorld.ismastersim then
@@ -456,7 +456,7 @@ if GetModConfigData("robobeetechconfig") == 1 then
 		end
 	end 
 	local junkpiles = {"chessjunk1", "chessjunk2", "chessjunk3"}
-	for k,v in pairs(junkpiles) do AddPrefabPostInit(v, ClockworkJunkRecipeDropPostInit) end
+	for _,v in ipairs(junkpiles) do AddPrefabPostInit(v, ClockworkJunkRecipeDropPostInit) end
 	
 end
 
@@ -482,6 +482,7 @@ AddComponentAction("SCENE", "stackbreaker", function(inst, doer, actions, right)
 end)
 
 -- CONTAINERS:
+-- OBBY: Removal of unnecessary return statement since containers.widgetsetup doesn't return a value
 local containers = GLOBAL.require("containers")
 local oldwidgetsetup = containers.widgetsetup
 _G=GLOBAL
@@ -493,7 +494,7 @@ containers.widgetsetup = function(container, prefab, ...)
 		((not prefab and container and container.inst and container.inst.prefab == "statuerobobee_caterpillar") or (prefab and container and container.inst and container.inst.prefab == "statuerobobee_caterpillar")) then
 		prefab = "treasurechest"
     end
-    return oldwidgetsetup(container, prefab, ...)
+    oldwidgetsetup(container, prefab, ...)
 end
 
 STRINGS.NAMES.ROBOBEE = "G10MM-3R"
@@ -684,9 +685,7 @@ STRINGS.CHARACTERS.WINONA.DESCRIBE.STATUEROBOBEE_CATERPILLAR = {
 	BEEINSIDE = "You're not fooling anyone, little guy." }
 	
 -- Skins:
-
 local function RecipePopupPostConstruct( widget )
-
     local _GetSkinsList = widget.GetSkinsList
     widget.GetSkinsList = function( self )
         if self.recipe.skinnable == nil then
@@ -710,7 +709,6 @@ local function RecipePopupPostConstruct( widget )
 	local GetName = function(var)
 		return GLOBAL.STRINGS.SKIN_NAMES[var]
 	end
-
 	
     local _GetSkinOptions = widget.GetSkinOptions
     widget.GetSkinOptions = function( self )
@@ -764,11 +762,9 @@ local function RecipePopupPostConstruct( widget )
     
     end
 end
-
 AddClassPostConstruct("widgets/recipepopup", RecipePopupPostConstruct)
 
 local function BuilderPostInit( builder )
-
     local _MakeRecipeFromMenu = builder.MakeRecipeFromMenu
     builder.MakeRecipeFromMenu = function( self, recipe, skin )
         if recipe.skinnable == nil then
@@ -812,11 +808,9 @@ local function BuilderPostInit( builder )
     end
     
 end
-
 AddComponentPostInit("builder", BuilderPostInit)
 
 local function PlayerControllerPostInit( playercontroller )
-
     local OldStartBuildPlacementMode = playercontroller.StartBuildPlacementMode
     playercontroller.StartBuildPlacementMode = function( self, recipe, skin )
 	
@@ -847,5 +841,4 @@ local function PlayerControllerPostInit( playercontroller )
 	
 	end
 end
-
 AddComponentPostInit("playercontroller", PlayerControllerPostInit)
