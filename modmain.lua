@@ -426,6 +426,14 @@ if GetModConfigData("excludeitemsconfig") == 4 then
 	AddPrefabPostInit("plant_normal", RobobeeExcludedItems)
 end
 
+if GetModConfigData("includecrops") == 1 then
+	local PLANT_DEFS = require("prefabs/farm_plant_defs").PLANT_DEFS
+	for _,v in pairs(PLANT_DEFS) do AddPrefabPostInit(v.prefab, RobobeeExcludedItems) end
+
+	local WEED_DEFS = require("prefabs/weed_defs").WEED_DEFS
+	for _,v in pairs(WEED_DEFS) do AddPrefabPostInit(v.prefab, RobobeeExcludedItems) end
+end
+
 ---
 
 function ForbiddenStructuresPostInit(inst)
@@ -814,7 +822,6 @@ local function BuilderPostInit( builder )
         
         return _DoBuild( self, recname, pt, rotation, skin )
     end
-    
 end
 AddComponentPostInit("builder", BuilderPostInit)
 

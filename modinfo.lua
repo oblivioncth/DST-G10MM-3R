@@ -1,7 +1,7 @@
 name = "G10MM-3R"
 description = "Automate gathering resources!"
 author = "<default>, oblivioncth"
-version = "1.35.02"
+version = "1.35.03"
 
 forumthread = "https://steamcommunity.com/sharedfiles/filedetails/?id=1628298090"
 
@@ -65,7 +65,17 @@ configuration_options = {
 		options =
 		{
 			{description = "No", hover	= "G10MM-3R will ignore structures.", data = 1},
-			{description = "Yes", hover	= "G10MM-3R can target Farms, Bee Boxes and Drying Racks.", data = 2},
+			{description = "Yes", hover	= "G10MM-3R can target Bee Boxes and Drying Racks.", data = 2},
+		},
+		default = 1,
+	},
+	{
+		name = "includecrops",
+		label = "Can target crops",
+		options =
+		{
+			{description = "No", hover	= "G10MM-3R will ignore unharvested crops.", data = 1},
+			{description = "Yes", hover	= "G10MM-3R can harvest crops (this includes weeds).", data = 2},
 		},
 		default = 1,
 	},
@@ -88,7 +98,7 @@ configuration_options = {
 			{description = "None", hover = "Regular G10MM-3R pickup list.", data = 1},
 			{description = "Flowers", hover = "This also includes Ferns and Succulents.", data = 2},
 			{description = "Meats", hover = "This also includes Eggs and Drying Racks.", data = 3},
-			{description = "Veggies/Fruits", hover = "This also includes Mushrooms and Farmplots.", data = 4},
+			{description = "Veggies/Fruits", hover = "This also includes Mushrooms. Does not affect unharvested crops.", data = 4},
 		},
 		default = 1,
 	},
