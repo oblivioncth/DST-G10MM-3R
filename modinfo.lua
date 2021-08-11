@@ -10,7 +10,7 @@ api_version_dst = 0xa
 dst_compatible = true
 dont_starve_compatible = false
 reign_of_giants_compatible = false
-all_clients_require_mod = true 
+all_clients_require_mod = true
 
 icon_atlas = "modicon.xml"
 icon = "modicon.tex"
@@ -23,7 +23,7 @@ server_filter_tags = {
 id = "robobeemod"
 
 configuration_options = {
-	{ 
+	{
 		name = "robobeestatuerecipeconfig",
 		label = "G10MM-3R Base Recipe",
 		options =
@@ -34,7 +34,7 @@ configuration_options = {
 		},
 		default = 2,
 	},
-	{ 
+	{
 		name = "robobeetechconfig",
 		label = "Recipe's availability",
 		options =
@@ -48,7 +48,7 @@ configuration_options = {
 		},
 		default = 1,
 	},
-	{ 
+	{
 		name = "chesticeboxconfig",
 		label = "G10MM-3R's Base Container is",
 		--hover	= "Choose the container, which should spawn.",
@@ -59,7 +59,7 @@ configuration_options = {
 		},
 		default = 1,
 	},
-	{ 
+	{
 		name = "includestructures",
 		label = "Can target structures",
 		options =
@@ -79,7 +79,7 @@ configuration_options = {
 		},
 		default = 1,
 	},
-	{ 
+	{
 		name = "whentoharvest",
 		label = "Harvest when the target",
 		options =
@@ -90,7 +90,7 @@ configuration_options = {
 		},
 		default = 1,
 	},
-	{ 
+	{
 		name = "excludeitemsconfig",
 		label = "G10MM-3R shouldn't pick up",
 		options =
@@ -102,7 +102,7 @@ configuration_options = {
 		},
 		default = 1,
 	},
-	{ 
+	{
 		name = "robobee_speed",
 		label = "G10MM-3R's Movespeed",
 		options =

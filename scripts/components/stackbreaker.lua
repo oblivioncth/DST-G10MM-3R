@@ -1,5 +1,5 @@
 local Stackbreaker = Class(function(self, inst)
-    self.inst = inst
+	self.inst = inst
 end)
 
 function Stackbreaker:BreakStack(stack)
@@ -20,7 +20,7 @@ function Stackbreaker:BreakStack(stack)
 				break
 			end
 		end
-		
+
 	end
 	return true
 end
