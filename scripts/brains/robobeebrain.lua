@@ -2,15 +2,7 @@ require "behaviours/follow"
 require "behaviours/wander"
 require "behaviours/faceentity"
 require "behaviours/panic"
-
-local MIN_FOLLOW_DIST = 0
-local MAX_FOLLOW_DIST = 15
-local TARGET_FOLLOW_DIST = 15
-
-local SEE_OBJECT_DIST = 15
-local KEEP_PICKING_DIST = 15
-
-local MAX_WANDER_DIST = 15
+require "robobeeutil"
 
 local function pickable_test(inst, target)
 	return target.components.pickable and target.components.pickable:CanBePicked() and target.components.pickable.product or 
@@ -20,6 +12,7 @@ local function pickable_test(inst, target)
 		target.components.harvestable and target.components.harvestable:CanBeHarvested() and target.components.harvestable.product or nil
 end
 
+--[[
 local function CheckSharedTable(inst, target) -- Unused
 	local numitems = 0
 	local baseitems = 0
@@ -94,6 +87,7 @@ local function CheckSharedTable(inst, target) -- Unused
 	end
 	
 end
+--]]
 
 local function stackable_test(inst, target, stack_in_base)
 	local inv_space = nil
@@ -143,83 +137,6 @@ local function stackable_test(inst, target, stack_in_base)
 	end
 end
 
-local function PickableCheck(v, target)
-	return target 
-	and target.components.pickable 
-	and target.components.pickable:CanBePicked() 
-	and target.components.pickable.product ~= nil 
-	and target.components.pickable.product == v.prefab 
-	and v.components.stackable 
-	and not v.components.stackable:IsFull() 
-	and ((target.components.pickable.jostlepick == nil or target.components.pickable.jostlepick == false) and target.components.pickable.numtoharvest <= v.components.stackable:RoomLeft() 
-	or target.components.pickable.jostlepick == true and 1 <= v.components.stackable:RoomLeft())
-end
-
-local function checkharvestconfiguration(target, prefab)
-	return ROBOBEE_HARVEST == 1 and ((TheWorld.state.iswinter and not TheWorld:HasTag("cave") and prefab == "beebox") or target.produce == target.maxproduce) and true
-	or ROBOBEE_HARVEST == 2 and ((TheWorld.state.iswinter and not TheWorld:HasTag("cave") and prefab == "beebox") or target.produce >= math.ceil(target.maxproduce*0.5)) and true
-	or ROBOBEE_HARVEST == 3 and target.produce > 0 and true
-	or false
-end
-
-local function HarvestableCheck(v, target)
-	return target 
-	and target.components.harvestable 
-	and target.components.harvestable:CanBeHarvested()
-	and target.components.harvestable.produce ~= nil 
-	and checkharvestconfiguration(target.components.harvestable, target.prefab) == true
-	and tostring(target.components.harvestable.product) == v.prefab  
-	and v.components.stackable 
-	and not v.components.stackable:IsFull() 
-	and target.components.harvestable.produce <= v.components.stackable:RoomLeft()
-end
-
-local function DryerCheck(v, target)
-	return target 
-	and target.components.dryer 
-	and target.components.dryer:IsDone()
-	and target.components.dryer.product ~= nil  
-	and target.components.dryer.product == v.prefab 
-	and v.components.stackable 
-	and not v.components.stackable:IsFull() 
-	and 1 <= v.components.stackable:RoomLeft()
-end
-
-local function CropCheck(v, target)
-	return target 
-	and target.components.crop 
-	and target.components.crop:IsReadyForHarvest()
-	and target.components.crop.product_prefab ~= nil  
-	and target.components.crop.product_prefab == v.prefab 
-	and v.components.stackable 
-	and not v.components.stackable:IsFull() 
-	and 1 <= v.components.stackable:RoomLeft()
-end
-
-local function Crop_LegionCheck(v, target)
-	return target 
-	and target.components.crop_legion 
-	and target.components.crop_legion:IsReadyForHarvest()
-	and target.components.crop_legion.product_prefab ~= nil  
-	and target.components.crop_legion.product_prefab == v.prefab 
-	and v.components.stackable 
-	and not v.components.stackable:IsFull() 
-	and target.components.crop_legion.numfruit <= v.components.stackable:RoomLeft()
-end
-
-local function CheckInvForViableCheck(base, target)
-	for k,v in pairs(base.components.container.slots) do
-		if target and not target.components.pickable and target.prefab and v and v.prefab and v.prefab == target.prefab and not v.components.stackable:IsFull() and (not target.components.burnable or target.components.burnable and not target.components.burnable:IsBurning()) or (PickableCheck(v, target) or HarvestableCheck(v, target) or DryerCheck(v, target) or CropCheck(v, target) or Crop_LegionCheck(v, target)) then
-			return true
-		end
-	end
-end
-
-local function inherentexclusioncheck(target)
-	return not target.components.harvestable and true
-	or target.components.harvestable:CanBeHarvested() and target.components.harvestable.produce ~= nil and checkharvestconfiguration(target.components.harvestable, target.prefab)
-end
-
 local function potentialtargettest(inst, target, basse)
 if inst.components.homeseeker and inst.components.homeseeker:HasHome() then
 	if inst.components.inventory and inst.components.inventory:IsFull() then
@@ -227,13 +144,11 @@ if inst.components.homeseeker and inst.components.homeseeker:HasHome() then
 	end
 
 	local base = basse or nil
-	local potentialtarget = target ~= nil and target or inst.components.homeseeker.home.passtargettobee ~= nil and inst.components.homeseeker.home.passtargettobee or nil
+	local potentialtarget = target or inst.components.homeseeker.home.passtargettobee -- OBBY: Simplified
 	-- try passing target from the base
 	
 	if potentialtarget == nil then
-		potentialtarget = FindEntity(base, SEE_OBJECT_DIST, function(item)
-			return item and item:IsValid() and item.prefab and CheckInvForViableCheck(base, item) or not base.components.container:IsFull() and inherentexclusioncheck(item) or false
-		end, nil, STATUEROBOBEE_EXCLUDETAGS, STATUEROBOBEE_INCLUDETAGS)
+		potentialtarget = FindEntityForRobobee(base)
 	end
 	
 	--if potentialtarget ~= nil and CheckSharedTable(inst, potentialtarget) == false then
@@ -304,9 +219,7 @@ local function FindObjectToPickAction(inst)
 	if inst.components.homeseeker and inst.components.homeseeker:HasHome() and inst.components.homeseeker.home.passtargettobee ~= nil then
 		target = inst.components.homeseeker.home.passtargettobee
 	else
-		target = FindEntity(base, SEE_OBJECT_DIST, function(item)
-			return item and item:IsValid() and item.prefab and CheckInvForViableCheck(base, item) or not base.components.container:IsFull() or false
-		end, nil, STATUEROBOBEE_EXCLUDETAGS, STATUEROBOBEE_INCLUDETAGS)
+		target = FindEntityForRobobee(base)
 	end
     
 	if target ~= nil and base ~= nil then
@@ -383,7 +296,7 @@ local function StartPickingCondition(inst)
 	if inst.somethingbroke == nil then
 		return inst.pickable_target == nil
 			and inst.stacktobreak == nil
-			and inst:IsNear(inst.components.follower.leader, KEEP_PICKING_DIST)
+			and inst:IsNear(inst.components.follower.leader, ROBOBEE_KEEP_PICKING_DIST)
 			and inst.components.follower.leader
 			and inst.components.follower.leader.components.childspawner.numchildrenoutside > 0
 			and ((inst.components.homeseeker and inst.components.homeseeker:HasHome() and inst.components.homeseeker.home.passtargettobee ~= nil and inst.components.homeseeker.home.passtargettobee.robobee_picker == nil) or true)

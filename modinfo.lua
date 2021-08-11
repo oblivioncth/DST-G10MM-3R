@@ -1,7 +1,7 @@
 name = "G10MM-3R"
 description = "Automate gathering resources!"
 author = "<default>, oblivioncth"
-version = "1.35.01"
+version = "1.35.02"
 
 forumthread = "https://steamcommunity.com/sharedfiles/filedetails/?id=1628298090"
 

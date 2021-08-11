@@ -1,6 +1,7 @@
 local function MakeStatueRobobeeSkin( name )
 
 require "prefabutil"
+require "robobeeutil"
 
 local assets =
 {
@@ -166,89 +167,10 @@ local function OnHit(inst, worker, workleft)
 	end
 end
 
-local function PickableCheck(v, target)
-	return target 
-	and target.components.pickable 
-	and target.components.pickable:CanBePicked() 
-	and target.components.pickable.product ~= nil 
-	and target.components.pickable.product == v.prefab 
-	and v.components.stackable 
-	and not v.components.stackable:IsFull() 
-	and ((target.components.pickable.jostlepick == nil or target.components.pickable.jostlepick == false) and target.components.pickable.numtoharvest <= v.components.stackable:RoomLeft() 
-	or target.components.pickable.jostlepick == true and 1 <= v.components.stackable:RoomLeft())
-end
-
-local function checkharvestconfiguration(target, prefab)
-	return ROBOBEE_HARVEST == 1 and ((TheWorld.state.iswinter and not TheWorld:HasTag("cave") and prefab == "beebox") or target.produce == target.maxproduce) and true
-	or ROBOBEE_HARVEST == 2 and ((TheWorld.state.iswinter and not TheWorld:HasTag("cave") and prefab == "beebox") or target.produce >= math.ceil(target.maxproduce*0.5)) and true
-	or ROBOBEE_HARVEST == 3 and target.produce > 0 and true
-	or false
-end
-
-local function HarvestableCheck(v, target)
-	return target 
-	and target.components.harvestable 
-	and target.components.harvestable:CanBeHarvested()
-	and target.components.harvestable.produce ~= nil 
-	and checkharvestconfiguration(target.components.harvestable, target.prefab) == true
-	and tostring(target.components.harvestable.product) == v.prefab 
-	and v.components.stackable 
-	and not v.components.stackable:IsFull() 
-	and target.components.harvestable.produce <= v.components.stackable:RoomLeft()
-end
-
-local function DryerCheck(v, target)
-	return target 
-	and target.components.dryer 
-	and target.components.dryer:IsDone()
-	and target.components.dryer.product ~= nil  
-	and target.components.dryer.product == v.prefab 
-	and v.components.stackable 
-	and not v.components.stackable:IsFull() 
-	and 1 <= v.components.stackable:RoomLeft()
-end
-
-local function CropCheck(v, target)
-	return target 
-	and target.components.crop 
-	and target.components.crop:IsReadyForHarvest()
-	and target.components.crop.product_prefab ~= nil  
-	and target.components.crop.product_prefab == v.prefab 
-	and v.components.stackable 
-	and not v.components.stackable:IsFull() 
-	and 1 <= v.components.stackable:RoomLeft()
-end
-
-local function Crop_LegionCheck(v, target)
-	return target 
-	and target.components.crop_legion 
-	and target.components.crop_legion:IsReadyForHarvest()
-	and target.components.crop_legion.product_prefab ~= nil  
-	and target.components.crop_legion.product_prefab == v.prefab 
-	and v.components.stackable 
-	and not v.components.stackable:IsFull() 
-	and target.components.crop_legion.numfruit <= v.components.stackable:RoomLeft()
-end
-
-local function CheckInvForViableCheck(inst, target)
-	for k,v in pairs(inst.components.container.slots) do
-		if target and not target.components.pickable and target.prefab and v and v.prefab and v.prefab == target.prefab and not v.components.stackable:IsFull() and (not target.components.burnable or target.components.burnable and not target.components.burnable:IsBurning()) or (PickableCheck(v, target) or HarvestableCheck(v, target) or DryerCheck(v, target) or CropCheck(v, target) or Crop_LegionCheck(v, target)) then
-			return true
-		end
-	end
-end
-
-local function inherentexclusioncheck(target)
-	return not target.components.harvestable and true
-	or target.components.harvestable:CanBeHarvested() and target.components.harvestable.produce ~= nil and checkharvestconfiguration(target.components.harvestable, target.prefab)
-end
-
 local function CheckAreaAndSpawnBee(inst)
 	if inst.components.childspawner and inst.components.childspawner.numchildrenoutside <= 0 then
 		
-		local target = FindEntity(inst, 15, function(item)
-			return item and item:IsValid() and item.prefab and CheckInvForViableCheck(inst, item) or not inst.components.container:IsFull() and inherentexclusioncheck(item) or false
-		end, nil, STATUEROBOBEE_EXCLUDETAGS, STATUEROBOBEE_INCLUDETAGS)
+		local target = FindEntityForRobobee(inst)
 		
 		local cantakeitem = nil
 		
