@@ -5,7 +5,6 @@ local assets =
 
 local function onupdate(inst, dt)
 	if inst.sound then
-		--inst.SoundEmitter:PlaySound("dontstarve/characters/wx78/spark")
 		inst.sound = nil
 	end
 
@@ -71,8 +70,6 @@ local function fn()
 	inst.entity:AddNetwork()
 
 	inst:AddTag("FX")
-
-	--inst.Transform:SetScale(2, 2, 2)
 
 	inst._rand = net_tinybyte(inst.GUID, "_rand", "randdirty")
 	inst._complete = false

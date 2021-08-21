@@ -123,7 +123,6 @@ local function MakeRobobeeSkin( name )
 				if not inst.components.health then
 					inst:AddComponent("health")
 				end
-				--inst:PushEvent("death")
 				inst.components.health:DoDelta(-1000)
 			else
 				local base = FindEntity(inst, 20, nil, nil, {"player"}, {"statuerobobee"})
@@ -135,8 +134,6 @@ local function MakeRobobeeSkin( name )
 				end
 			end
 		end)
-
-		--inst.OnRemoveEntity = OnRemove
 
 		inst:SetBrain(brain)
 		inst:SetStateGraph("SGrobobee")

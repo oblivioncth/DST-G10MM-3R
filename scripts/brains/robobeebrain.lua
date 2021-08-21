@@ -12,83 +12,6 @@ local function pickable_test(inst, target)
 		target.components.harvestable and target.components.harvestable:CanBeHarvested() and target.components.harvestable.product or nil
 end
 
---[[
-local function CheckSharedTable(inst, target) -- Unused
-	local numitems = 0
-	local baseitems = 0
-	local shared_table = {}
-	local continue_table = {}
-
-	for k, v in pairs(inst.components.inventory.itemslots) do
-		if v ~= nil and v.prefab then
-			numitems = numitems+1
-			if numitems > 9 then
-				return false -- bee cannot have more than 9 slots filled
-			end
-			table.insert(shared_table, v)
-		end
-	end
-
-	local tar05 = (target.components.stackable and target) or
-	(target.components.pickable and target.components.pickable.product and ((target.components.pickable.jostlepick == nil or target.components.pickable.jostlepick == false) and target.components.pickable.numtoharvest or target.components.pickable.jostlepick == true and 1)) or
-	(target.components.crop and 1) or
-	(target.components.crop_legion and target.components.crop_legion.numfruit) or
-	(target.components.dryer and 1) or
-	(target.components.harvestable and target.components.harvestable.produce) or nil
-
-	local tar1 = tar05 and (type(tar05) == "number" and tar05) or tar05.components.stackable:StackSize()
-
-	for k, v in pairs(inst.components.homeseeker.home.components.container.slots) do
-		if v ~= nil and tar1 ~= nil and v.prefab and v.components.stackable and not v.components.stackable:IsFull() and target and target.prefab ~= nil and (target.prefab == v.prefab or pickable_test(inst, target) == v.prefab) and tar1 <= v.components.stackable:RoomLeft() then
-			-- nothing, lol
-		else
-			baseitems = baseitems+1
-		end
-	end
-
-	-- Now that we have number of keys, we can loop the function and check every prefab
-	local _base = inst.components.homeseeker.home.components.container.slots
-
-	for k = 1, numitems do
-		if (_base[1] ~= nil and _base[1].prefab ~= nil and _base[1].components and shared_table[k] ~= nil and shared_table[k].prefab ~= nil and ((_base[1].components.stackable and _base[1].components.stackable:IsFull() and shared_table[k].prefab == _base[1].prefab) or (not _base[1].components.stackable and shared_table[k].prefab ~= _base[1].prefab)))
-		or	(_base[2] ~= nil and _base[2].prefab ~= nil and _base[2].components and shared_table[k] ~= nil and shared_table[k].prefab ~= nil and ((_base[2].components.stackable and _base[2].components.stackable:IsFull() and shared_table[k].prefab == _base[2].prefab) or (not _base[2].components.stackable and shared_table[k].prefab ~= _base[2].prefab)))
-		or  (_base[3] ~= nil and _base[3].prefab ~= nil and _base[3].components and shared_table[k] ~= nil and shared_table[k].prefab ~= nil and ((_base[3].components.stackable and _base[3].components.stackable:IsFull() and shared_table[k].prefab == _base[3].prefab) or (not _base[3].components.stackable and shared_table[k].prefab ~= _base[3].prefab)))
-		or	(_base[4] ~= nil and _base[4].prefab ~= nil and _base[4].components and shared_table[k] ~= nil and shared_table[k].prefab ~= nil and ((_base[4].components.stackable and _base[4].components.stackable:IsFull() and shared_table[k].prefab == _base[4].prefab) or (not _base[4].components.stackable and shared_table[k].prefab ~= _base[4].prefab)))
-		or  (_base[5] ~= nil and _base[5].prefab ~= nil and _base[5].components and shared_table[k] ~= nil and shared_table[k].prefab ~= nil and ((_base[5].components.stackable and _base[5].components.stackable:IsFull() and shared_table[k].prefab == _base[5].prefab) or (not _base[5].components.stackable and shared_table[k].prefab ~= _base[5].prefab)))
-		or	(_base[6] ~= nil and _base[6].prefab ~= nil and _base[6].components and shared_table[k] ~= nil and shared_table[k].prefab ~= nil and ((_base[6].components.stackable and _base[6].components.stackable:IsFull() and shared_table[k].prefab == _base[6].prefab) or (not _base[6].components.stackable and shared_table[k].prefab ~= _base[6].prefab)))
-		or	(_base[7] ~= nil and _base[7].prefab ~= nil and _base[7].components and shared_table[k] ~= nil and shared_table[k].prefab ~= nil and ((_base[7].components.stackable and _base[7].components.stackable:IsFull() and shared_table[k].prefab == _base[7].prefab) or (not _base[7].components.stackable and shared_table[k].prefab ~= _base[7].prefab)))
-		or	(_base[8] ~= nil and _base[8].prefab ~= nil and _base[8].components and shared_table[k] ~= nil and shared_table[k].prefab ~= nil and ((_base[8].components.stackable and _base[8].components.stackable:IsFull() and shared_table[k].prefab == _base[8].prefab) or (not _base[8].components.stackable and shared_table[k].prefab ~= _base[8].prefab)))
-		or	(_base[9] ~= nil and _base[9].prefab ~= nil and _base[9].components and shared_table[k] ~= nil and shared_table[k].prefab ~= nil and ((_base[9].components.stackable and _base[9].components.stackable:IsFull() and shared_table[k].prefab == _base[9].prefab) or (not _base[9].components.stackable and shared_table[k].prefab ~= _base[9].prefab))) then
-			print("Putting item " .. shared_table[k].prefab .. " into a table!")
-			print("Currently in inventory there's " .. numitems .. " items.")
-			table.insert(continue_table, shared_table[k])
-			--table.remove(shared_table, k)
-		end
-	end
-
-	print("--Done--")
-
-	local total_items = baseitems
-
-	for k, v in pairs(shared_table) do
-		if v ~= nil and v.prefab then
-			total_items = total_items+1
-		end
-	end
-
-	print("Total number of items: " .. total_items)
-
-	if total_items < 9 then
-		print("returning true")
-		return true
-	else
-		print("returning false")
-		return false
-	end
-
-end
---]]
-
 local function stackable_test(inst, target, stack_in_base)
 	local inv_space = nil
 
@@ -150,10 +73,6 @@ local function potentialtargettest(inst, target, basse)
 		if potentialtarget == nil then
 			potentialtarget = FindEntityForRobobee(base)
 		end
-
-		--if potentialtarget ~= nil and CheckSharedTable(inst, potentialtarget) == false then
-			--return false
-		--end
 
 		if base == nil then
 			base = inst.components.homeseeker:HasHome() ~= nil and inst.components.homeseeker.home

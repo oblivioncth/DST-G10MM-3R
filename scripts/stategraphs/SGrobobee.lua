@@ -92,11 +92,6 @@ local states=
 				else
 					inst.sg:GoToState("frozen")
 				end
-
-				--if inst.components.homeseeker and inst.components.homeseeker:HasHome() then
-					--inst.components.homeseeker:GoHome(true)
-				--end
-				--inst.sg:GoToState("emergencystate")
 			end)
 		},
 	},
@@ -117,8 +112,6 @@ local states=
 				inst.AnimState:PlayAnimation("place")
 				StartFlap(inst)
 			end
-
-			--inst.sg:SetTimeout(inst.AnimState:GetCurrentAnimationLength())
 		end,
 
 		onexit = function(inst)
@@ -211,9 +204,6 @@ local states=
 				end
 			end),
 			TimeEvent(30*FRAMES, function(inst)
-				--if inst.bufferedaction and inst.bufferedaction.target and inst.bufferedaction.target.components.inventoryitem and (inst.bufferedaction.target.components.inventoryitem.canbepickedup == nil or inst.bufferedaction.target.components.inventoryitem.canbepickedup == false) then
-					--inst.bufferedaction.target.components.inventoryitem.canbepickedup = true
-				--end
 				if inst.bufferedaction and inst.bufferedaction.target and not inst.bufferedaction.target.components.pickable
 					and inst.bufferedaction.target.components.inventoryitem and inst.bufferedaction.target.components.inventoryitem.canbepickedup == true then
 					inst:PerformBufferedAction()
@@ -409,7 +399,6 @@ CommonStates.AddCombatStates(states,
 		TimeEvent(10*FRAMES, function(inst) StopFlap(inst) end),
 		TimeEvent(18*FRAMES, function(inst)
 			inst.SoundEmitter:PlaySound("robobeesounds/robobeesounds/faceplant_ground")
-			--inst:DoTaskInTime(2, ErodeAway)
 		end)
 	},
 })

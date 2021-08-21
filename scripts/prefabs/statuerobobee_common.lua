@@ -99,7 +99,6 @@ local function MakeStatueRobobeeSkin( name )
 					if not v.components.health then
 						v:AddComponent("health")
 						v.components.health:DoDelta(-1000)
-						--v:PushEvent("death")
 					end 
 				end
 			end
@@ -227,7 +226,6 @@ local function MakeStatueRobobeeSkin( name )
 				inst.SoundEmitter:PlaySound("dontstarve/common/icebox_open")
 			end
 		end
-		--UpdateContainerTable(inst)
 	end 
 
 	local function onclose(inst)
@@ -467,14 +465,12 @@ local function MakeStatueRobobeeSkin( name )
 		inst.components.childspawner:SetMaxChildren(1)
 		inst.components.childspawner:SetSpawnedFn(OnRobobeeSpawned)
 		inst.components.childspawner:SetGoHomeFn(OnRobobeeBackHome)
-		--inst.components.childspawner:SetRegenPeriod(1)
 		inst.components.childspawner:StopRegen()
 		
 		inst:AddComponent("container")
 		inst.components.container:WidgetSetup("treasurechest")
 		inst.components.container.onopenfn = onopen
 		inst.components.container.onclosefn = onclose
-		--inst.components.container.itemtestfn = nil
 
 		inst:AddComponent("workable")
 		inst.components.workable:SetWorkAction(ACTIONS.HAMMER)
@@ -484,7 +480,6 @@ local function MakeStatueRobobeeSkin( name )
 		inst:ListenForEvent("onbuilt", OnBuilt)
 
 		inst:AddComponent("lootdropper")
-		--inst.components.lootdropper:SetChanceLootTable("statueglommer")
 		
 		inst:AddComponent("sanityaura")
 		inst.components.sanityaura.aura = 0
@@ -492,9 +487,7 @@ local function MakeStatueRobobeeSkin( name )
 		MakeHauntableWork(inst)
 				
 		inst:DoPeriodicTask(3, function(inst) CheckAreaAndSpawnBee(inst) end)
-		
-		--inst:DoPeriodicTask(0.4, function(inst) if inst.components.childspawner and inst.components.childspawner.numchildrenoutside <= 0 then inst.AnimState:Show("SWAP_ROBOBEE") else inst.AnimState:Hide("SWAP_ROBOBEE") end end)
-		
+				
 		inst:DoPeriodicTask(100*FRAMES, function(inst)
 			UpdateSwapBee(inst)
 		end)
@@ -514,11 +507,7 @@ local function MakeStatueRobobeeSkin( name )
 				PreventSpawn(inst)
 			end
 		end)
-		
-		--inst:ListenForEvent("gotnewitem", UpdateContainerTable(inst))
-		--inst:ListenForEvent("itemget", UpdateContainerTable(inst))
-		--inst:ListenForEvent("itemlose", UpdateContainerTable(inst))
-		
+				
 		return inst	
 	end
 		

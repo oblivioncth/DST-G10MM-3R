@@ -93,13 +93,8 @@ local ACTIONS = GLOBAL.ACTIONS
 local ActionHandler = GLOBAL.ActionHandler
 
 -- OBBY: Static Globals
---GLOBAL.ROBOBEE_MIN_FOLLOW_DIST = 0 -- Unused
---GLOBAL.ROBOBEE_MAX_FOLLOW_DIST = 15 -- Unused
---GLOBAL.ROBOBEE_TARGET_FOLLOW_DIST = 15 -- Unused
-
 GLOBAL.ROBOBEE_SEE_OBJECT_DIST = 15
 GLOBAL.ROBOBEE_KEEP_PICKING_DIST = 15
---GLOBAL.ROBOBEE_MAX_WANDER_DIST = 15 -- Unused
 
 -- OBBY: Dynamic Globals
 GLOBAL.ROBOBEE_HARVEST = GetModConfigData("whentoharvest")
@@ -265,19 +260,7 @@ AddComponentPostInit("inventoryitem", function(Inventoryitem)
 			self.inst.AnimState:OverrideMultColour(1, 1, 1, 1)
 			self.inst.wasmadeclear = nil
 		end
-
-		--if self.inst ~= nil and self.inst.Transform ~= nil and self.inst.originaltransformsize ~= nil then
-			--local oldsize = self.inst.originaltransformsize
-			--self.inst.Transform:SetScale(oldsize, oldsize, oldsize)
-			--self.inst.originaltransformsize = nil
-		--end
-
-		--if self.inst ~= nil and self.inst.AnimState ~= nil and self.inst.originalcolour ~= nil then
-			--local oldcolour = self.inst.originalcolour
-			--self.inst.AnimState:SetAddColour(oldcolour[1], oldcolour[2], oldcolour[3], oldcolour[4])
-			--self.inst.originalcolour = nil
-		--end
-
+		
 		OldOnDropped(self, ...)
 	end
 end)

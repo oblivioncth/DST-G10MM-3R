@@ -19,7 +19,6 @@ server_filter_tags = {
 "robobee", "robot glommer", "g10mm-3R","creature"
 }
 
---priority = 257
 id = "robobeemod"
 
 configuration_options = {
@@ -51,7 +50,6 @@ configuration_options = {
 	{
 		name = "chesticeboxconfig",
 		label = "G10MM-3R's Base Container is",
-		--hover	= "Choose the container, which should spawn.",
 		options =
 		{
 			{description = "Chest", data = 1},
