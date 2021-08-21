@@ -490,10 +490,7 @@ local function MakeStatueRobobeeSkin( name )
 		inst.components.sanityaura.aura = 0
 
 		MakeHauntableWork(inst)
-		
-		inst.updateswapbee = UpdateSwapBee
-		inst.checkarea = CheckAreaAndSpawnBee
-		
+				
 		inst:DoPeriodicTask(3, function(inst) CheckAreaAndSpawnBee(inst) end)
 		
 		--inst:DoPeriodicTask(0.4, function(inst) if inst.components.childspawner and inst.components.childspawner.numchildrenoutside <= 0 then inst.AnimState:Show("SWAP_ROBOBEE") else inst.AnimState:Hide("SWAP_ROBOBEE") end end)

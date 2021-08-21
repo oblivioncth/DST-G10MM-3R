@@ -135,7 +135,7 @@ local states=
 
 			if inst.components.homeseeker and inst.components.homeseeker:HasHome() then
 				local base = inst.components.homeseeker.home
-				--base.checkarea(base)
+
 				if inst.components.homeseeker.home.passtargettobee ~= nil then
 					inst.components.homeseeker.home.passtargettobee = nil -- reset target sent from base
 				end
