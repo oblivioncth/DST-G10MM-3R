@@ -80,16 +80,6 @@ Assets = {
 
 modimport("libs/engine.lua")
 
-local require = GLOBAL.require
-local STRINGS = GLOBAL.STRINGS
-local RECIPETABS = GLOBAL.RECIPETABS
-local Recipe = GLOBAL.Recipe
-local Ingredient = GLOBAL.Ingredient
-local TECH = GLOBAL.TECH
-local TUNING = GLOBAL.TUNING
-local ACTIONS = GLOBAL.ACTIONS
-local ActionHandler = GLOBAL.ActionHandler
-
 --Static Globals
 GLOBAL.ROBOBEE_SEE_OBJECT_DIST = 15
 GLOBAL.ROBOBEE_KEEP_PICKING_DIST = 15
@@ -122,7 +112,7 @@ GLOBAL.PREFAB_SKINS.statuerobobee =
 }
 
 GLOBAL.PREFAB_SKINS_IDS = {}
-for prefab,skins in pairs(GLOBAL.PREFAB_SKINS) do
+for prefab,skins in pairs(PREFAB_SKINS) do
 	GLOBAL.PREFAB_SKINS_IDS[prefab] = {}
 	for k,v in pairs(skins) do
 		GLOBAL.PREFAB_SKINS_IDS[prefab][v] = k
@@ -288,7 +278,7 @@ AddComponentPostInit("childspawner", function(ChildSpawner)
 end)
 
 function RobobeePickableItems(inst)
-	if GLOBAL.TheWorld.ismastersim then
+	if TheWorld.ismastersim then
 		inst:AddTag("robobee_transportable")
 	end
 end
@@ -379,7 +369,7 @@ for _,v in ipairs(other) do AddPrefabPostInit(v, RobobeePickableItems) end
 ---
 
 function RobobeeExcludedItems(inst)
-	if GLOBAL.TheWorld.ismastersim then
+	if TheWorld.ismastersim then
 		inst:AddTag("robobee_excluded")
 	end
 end
@@ -414,7 +404,7 @@ end
 ---
 
 function ForbiddenStructuresPostInit(inst)
-	if GLOBAL.TheWorld.ismastersim then -- no need to add the tag for clients, G10MM-3R operates locally
+	if TheWorld.ismastersim then -- no need to add the tag for clients, G10MM-3R operates locally
 		inst:AddTag("robobee_excluded")
 	end
 end
@@ -423,7 +413,7 @@ AddPrefabPostInit("sculptingtable", ForbiddenStructuresPostInit)
 if GetModConfigData("robobeetechconfig") == 1 then
 
 	function GlommerStatuePostInit(inst)
-		if GLOBAL.TheWorld.ismastersim then
+		if TheWorld.ismastersim then
 			if inst.components.lootdropper then
 				inst.components.lootdropper:AddChanceLoot("statuerobobee_blueprint", 1)
 			end
@@ -432,7 +422,7 @@ if GetModConfigData("robobeetechconfig") == 1 then
 	AddPrefabPostInit("statueglommer", GlommerStatuePostInit)
 
 	function RaidBossesRecipeDropPostInit(inst)
-		if GLOBAL.TheWorld.ismastersim then
+		if TheWorld.ismastersim then
 			if inst.components.lootdropper then
 				inst.components.lootdropper:AddChanceLoot("statuerobobee_blueprint", 0.2)
 			end
@@ -442,7 +432,7 @@ if GetModConfigData("robobeetechconfig") == 1 then
 	for _,v in ipairs(bosses) do AddPrefabPostInit(v, RaidBossesRecipeDropPostInit) end
 
 	function ClockworkJunkRecipeDropPostInit(inst)
-		if GLOBAL.TheWorld.ismastersim then
+		if TheWorld.ismastersim then
 			if inst.components.lootdropper then
 				inst.components.lootdropper:AddChanceLoot("statuerobobee_blueprint", 0.01)
 			end
@@ -453,7 +443,7 @@ if GetModConfigData("robobeetechconfig") == 1 then
 
 end
 
-local BREAKSTACK = GLOBAL.Action({ priority= 10 })
+local BREAKSTACK = Action({ priority= 10 })
 BREAKSTACK.str = "Break Stack"
 BREAKSTACK.id = "BREAKSTACK"
 BREAKSTACK.fn = function(act)
@@ -475,7 +465,7 @@ AddComponentAction("SCENE", "stackbreaker", function(inst, doer, actions, right)
 end)
 
 -- CONTAINERS:
-local containers = GLOBAL.require("containers")
+local containers = require("containers")
 local oldwidgetsetup = containers.widgetsetup
 _G=GLOBAL
 mods=_G.rawget(_G,"mods")or(function()local m={}_G.rawset(_G,"mods",m)return m end)()
@@ -501,8 +491,8 @@ local function RecipePopupPostConstruct( widget )
 		end
 
 		self.skins_list = {}
-		if self.recipe and GLOBAL.PREFAB_SKINS[self.recipe.name] then
-			for _,item_type in pairs(GLOBAL.PREFAB_SKINS[self.recipe.name]) do
+		if self.recipe and PREFAB_SKINS[self.recipe.name] then
+			for _,item_type in pairs(PREFAB_SKINS[self.recipe.name]) do
 				local data  = {}
 				    data.type = type
 				    data.item = item_type
@@ -515,7 +505,7 @@ local function RecipePopupPostConstruct( widget )
 	end
 
 	local GetName = function(var)
-		return GLOBAL.STRINGS.SKIN_NAMES[var]
+		return STRINGS.SKIN_NAMES[var]
 	end
 
 	local _GetSkinOptions = widget.GetSkinOptions
@@ -528,22 +518,22 @@ local function RecipePopupPostConstruct( widget )
 
 		table.insert(skin_options,
 		{
-			text = GLOBAL.STRINGS.UI.CRAFTING.DEFAULT,
+			text = STRINGS.UI.CRAFTING.DEFAULT,
 			data = nil,
-			colour = GLOBAL.SKIN_RARITY_COLORS["Common"],
+			colour = SKIN_RARITY_COLORS["Common"],
 			new_indicator = false,
 			image =  {self.recipe.atlas or "images/inventoryimages.xml", self.recipe.image or self.recipe.name .. ".tex", "default.tex"},
 		})
 
-		local recipe_timestamp = GLOBAL.Profile:GetRecipeTimestamp(self.recipe.name)
+		local recipe_timestamp = Profile:GetRecipeTimestamp(self.recipe.name)
 		--print(self.recipe.name, "Recipe timestamp is ", recipe_timestamp)
-		if self.skins_list and GLOBAL.TheNet:IsOnlineMode() then
+		if self.skins_list and TheNet:IsOnlineMode() then
 			for which = 1, #self.skins_list do
 				local image_name = self.skins_list[which].item
 
-				local rarity = GLOBAL.GetRarityForItem("item", image_name)
-				local colour = rarity and GLOBAL.SKIN_RARITY_COLORS[rarity] or GLOBAL.SKIN_RARITY_COLORS["Common"]
-				local text_name = GetName(image_name) or GLOBAL.SKIN_STRINGS.SKIN_NAMES["missing"]
+				local rarity = GetRarityForItem("item", image_name)
+				local colour = rarity and SKIN_RARITY_COLORS[rarity] or SKIN_RARITY_COLORS["Common"]
+				local text_name = GetName(image_name) or SKIN_STRINGS.SKIN_NAMES["missing"]
 				local new_indicator = not self.skins_list[which].timestamp or (self.skins_list[which].timestamp > recipe_timestamp)
 
 				if image_name == "" then
@@ -585,7 +575,7 @@ local function BuilderPostInit( builder )
 					if self:IsBuildBuffered(recipe.name) or self:CanBuild(recipe.name) then
 						self:MakeRecipe(recipe, nil, nil, skin)
 					end
-				elseif GLOBAL.CanPrototypeRecipe(recipe.level, self.accessible_tech_trees) and
+				elseif CanPrototypeRecipe(recipe.level, self.accessible_tech_trees) and
 					self:CanLearn(recipe.name) and
 					self:CanBuild(recipe.name) then
 					self:MakeRecipe(recipe, nil, nil, skin, function()
@@ -599,15 +589,15 @@ local function BuilderPostInit( builder )
 
 	local _DoBuild = builder.DoBuild
 	builder.DoBuild = function( self, recname, pt, rotation, skin )
-		if GLOBAL.GetValidRecipe(recname).skinnable then
+		if GetValidRecipe(recname).skinnable then
 			if skin ~= nil then
-				if GLOBAL.AllRecipes[recname]._oldproduct == nil then
-					GLOBAL.AllRecipes[recname]._oldproduct = GLOBAL.AllRecipes[recname].product
+				if AllRecipes[recname]._oldproduct == nil then
+					GLOBAL.AllRecipes[recname]._oldproduct = AllRecipes[recname].product
 				end
 				GLOBAL.AllRecipes[recname].product = skin
 			else
-				if GLOBAL.AllRecipes[recname]._oldproduct ~= nil then
-					GLOBAL.AllRecipes[recname].product = GLOBAL.AllRecipes[recname]._oldproduct
+				if AllRecipes[recname]._oldproduct ~= nil then
+					GLOBAL.AllRecipes[recname].product = AllRecipes[recname]._oldproduct
 				end
 			end
 		end
