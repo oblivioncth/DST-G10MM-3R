@@ -23,15 +23,14 @@ id = "robobeemod"
 
 configuration_options = {
 	{
-		name = "robobeestatuerecipeconfig",
-		label = "G10MM-3R Base Recipe",
+		name = "chesticeboxconfig",
+		label = "G10MM-3R's Base Container is",
 		options =
 		{
-			{description = "Easy", hover = "1 Gears + 1 Glommer's Flower + 1 Glommer's Wings", data = 1},
-			{description = "Default", hover = "2 Gears + 1 Glommer's Flower + 1 Glommer's Wings", data = 2},
-			{description = "Hard", hover = "3 Gears + 1 Glommer's Flower + 1 Glommer's Wings", data = 3},
+			{description = "Chest", data = 1},
+			{description = "Icebox", data = 0},
 		},
-		default = 2,
+		default = 1,
 	},
 	{
 		name = "robobeetechconfig",
@@ -48,14 +47,15 @@ configuration_options = {
 		default = 1,
 	},
 	{
-		name = "chesticeboxconfig",
-		label = "G10MM-3R's Base Container is",
+		name = "robobeestatuerecipeconfig",
+		label = "G10MM-3R Base Recipe",
 		options =
 		{
-			{description = "Chest", data = 1},
-			{description = "Icebox", data = 0},
+			{description = "Easy", hover = "1 Gears + 1 Glommer's Flower + 1 Glommer's Wings", data = 1},
+			{description = "Default", hover = "2 Gears + 1 Glommer's Flower + 1 Glommer's Wings", data = 2},
+			{description = "Hard", hover = "3 Gears + 1 Glommer's Flower + 1 Glommer's Wings", data = 3},
 		},
-		default = 1,
+		default = 2,
 	},
 	{
 		name = "includestructures",
@@ -78,17 +78,6 @@ configuration_options = {
 		default = 1,
 	},
 	{
-		name = "whentoharvest",
-		label = "Harvest when the target",
-		options =
-		{
-			{description = "Is full", hover	= "G10MM-3R will harvest Bee Boxes, etc. only when they're full.", data = 1},
-			{description = "Is halfway full", hover	= "G10MM-3R will harvest Bee Boxes, etc. when they're at least halfway full.", data = 2},
-			{description = "Always", hover	= "G10MM-3R will harvest Bee Boxes, etc. as soon as they produce.", data = 3},
-		},
-		default = 1,
-	},
-	{
 		name = "excludeitemsconfig",
 		label = "G10MM-3R shouldn't pick up",
 		options =
@@ -97,6 +86,17 @@ configuration_options = {
 			{description = "Flowers", hover = "This also includes Ferns and Succulents.", data = 2},
 			{description = "Meats", hover = "This also includes Eggs and Drying Racks.", data = 3},
 			{description = "Veggies/Fruits", hover = "This also includes Mushrooms. Does not affect unharvested crops.", data = 4},
+		},
+		default = 1,
+	},
+	{
+		name = "whentoharvest",
+		label = "Harvest when the target",
+		options =
+		{
+			{description = "Is full", hover	= "G10MM-3R will harvest Bee Boxes, etc. only when they're full.", data = 1},
+			{description = "Is halfway full", hover	= "G10MM-3R will harvest Bee Boxes, etc. when they're at least halfway full.", data = 2},
+			{description = "Always", hover	= "G10MM-3R will harvest Bee Boxes, etc. as soon as they produce.", data = 3},
 		},
 		default = 1,
 	},
