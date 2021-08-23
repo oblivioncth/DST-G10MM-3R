@@ -80,7 +80,7 @@ Assets = {
 	Asset("IMAGE", "images/map_icons/robobee_caterpillar.tex"),
 }
 
-modimport("libs/env.lua")
+modimport("libs/engine.lua")
 
 local require = GLOBAL.require
 local STRINGS = GLOBAL.STRINGS
