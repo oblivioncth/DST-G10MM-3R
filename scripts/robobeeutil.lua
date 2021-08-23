@@ -1,5 +1,3 @@
--- OBBY: General consolidation of previously redundant functions to a common file
-
 local function PickableCheck(v, target)
 	return target
 	and target.components.pickable
@@ -104,7 +102,7 @@ function CheckInvForViableCheck(inst, target)
 		end
 	end
 
-	return nil -- OBBY: More explicit in showing what happens if the check fails
+	return nil
 end
 
 local function inherentexclusioncheck(target)

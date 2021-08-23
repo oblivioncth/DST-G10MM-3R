@@ -67,7 +67,7 @@ local function potentialtargettest(inst, target, basse)
 		end
 
 		local base = basse or nil
-		local potentialtarget = target or inst.components.homeseeker.home.passtargettobee -- OBBY: Simplified
+		local potentialtarget = target or inst.components.homeseeker.home.passtargettobee
 		-- try passing target from the base
 
 		if potentialtarget == nil then

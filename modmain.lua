@@ -92,11 +92,11 @@ local TUNING = GLOBAL.TUNING
 local ACTIONS = GLOBAL.ACTIONS
 local ActionHandler = GLOBAL.ActionHandler
 
--- OBBY: Static Globals
+--Static Globals
 GLOBAL.ROBOBEE_SEE_OBJECT_DIST = 15
 GLOBAL.ROBOBEE_KEEP_PICKING_DIST = 15
 
--- OBBY: Dynamic Globals
+--Dynamic Globals
 GLOBAL.ROBOBEE_HARVEST = GetModConfigData("whentoharvest")
 
 GLOBAL.ROBOBEE_MOVESPEED = GetModConfigData("robobee_speed")
@@ -184,7 +184,6 @@ AddMinimapAtlas("images/map_icons/statuerobobee_map_icebox_caterpillar.xml")
 AddMinimapAtlas("images/map_icons/statuerobobee_map_full_icebox_caterpillar.xml")
 AddMinimapAtlas("images/map_icons/robobee_caterpillar.xml")
 
--- OBBY: Combinding of previous two AddComponentPostInit uses into one, and fix for newer Pick which (sometimes) returns a value
 AddComponentPostInit("pickable", function(Pickable)
 	local OldPick = Pickable.Pick
 	local OldRegen = Pickable.Regen
@@ -225,7 +224,6 @@ AddComponentPostInit("pickable", function(Pickable)
 	end
 end)
 
--- OBBY: Simplification of function args and combinding of previous two AddComponentPostInit uses into one
 AddComponentPostInit("inventoryitem", function(Inventoryitem)
 	local OldOnPutInInventory = Inventoryitem.OnPutInInventory
 	local OldOnDropped = Inventoryitem.OnDropped
@@ -265,7 +263,6 @@ AddComponentPostInit("inventoryitem", function(Inventoryitem)
 	end
 end)
 
--- OBBY: Simplification of function args
 AddComponentPostInit("spellcaster", function(SpellCaster)
 	local OldCanCast = SpellCaster.CanCast
 	SpellCaster.CanCast = function(self, doer, target, ...)
@@ -280,7 +277,6 @@ AddComponentPostInit("spellcaster", function(SpellCaster)
 	end
 end)
 
--- OBBY: Fix for newer ReleaseAllChildren that returns a value, simplification of function args
 AddComponentPostInit("childspawner", function(ChildSpawner)
 	local OldReleaseAllChildren = ChildSpawner.ReleaseAllChildren
 	ChildSpawner.ReleaseAllChildren = function(self, target, ...)
@@ -481,7 +477,6 @@ AddComponentAction("SCENE", "stackbreaker", function(inst, doer, actions, right)
 end)
 
 -- CONTAINERS:
--- OBBY: Removal of unnecessary return statement since containers.widgetsetup doesn't return a value
 local containers = GLOBAL.require("containers")
 local oldwidgetsetup = containers.widgetsetup
 _G=GLOBAL
