@@ -20,9 +20,9 @@ STRINGS.NAMES.STATUEROBOBEE = "G10MM-3R Base"
 STRINGS.NAMES.STATUEROBOBEE_78 = "G10MM-3R Base"
 STRINGS.NAMES.STATUEROBOBEE_CATERPILLAR = "G10MM-3R Base"
 
-GLOBAL.STRINGS.SKIN_NAMES.statuerobobee = "Default"
-GLOBAL.STRINGS.SKIN_NAMES.statuerobobee_78 = "Clockwork"
-GLOBAL.STRINGS.SKIN_NAMES.statuerobobee_caterpillar = "Caterpillar"
+STRINGS.SKIN_NAMES.statuerobobee = "Default"
+STRINGS.SKIN_NAMES.statuerobobee_78 = "Clockwork"
+STRINGS.SKIN_NAMES.statuerobobee_caterpillar = "Caterpillar"
 
 STRINGS.RECIPE_DESC.STATUEROBOBEE = "Small deposit station. Comes with a drone."
 STRINGS.RECIPE_DESC.STATUEROBOBEE_78 = "Small deposit station. Comes with a drone." -- this fixes disappearing in-menu flavor text after crafting the skinned robobee base
