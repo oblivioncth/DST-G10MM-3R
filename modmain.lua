@@ -6,8 +6,6 @@ PrefabFiles = {
 	"statuerobobee_78",
 	"statuerobobee_caterpillar",
 	"sparks_robobee",
-	"sparks_robobee_78",
-	"sparks_robobee_caterpillar",
 }
 
 Assets = {
