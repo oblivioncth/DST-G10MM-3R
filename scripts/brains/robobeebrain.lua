@@ -2,7 +2,7 @@ require "behaviours/follow"
 require "behaviours/wander"
 require "behaviours/faceentity"
 require "behaviours/panic"
-require "robobeeutil"
+require "robobee_util"
 
 local function pickable_test(inst, target)
 	return target.components.pickable and target.components.pickable:CanBePicked() and target.components.pickable.product or

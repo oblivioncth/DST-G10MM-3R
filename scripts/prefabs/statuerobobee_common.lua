@@ -1,6 +1,6 @@
 local function MakeStatueRobobeeSkin( name )
 	require "prefabutil"
-	require "robobeeutil"
+	require "robobee_util"
 
 	local assets =
 	{
