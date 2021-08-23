@@ -145,17 +145,7 @@ local states=
 					inst.SoundEmitter:PlaySound("robobeesounds/robobeesounds/idle")
 				end
 
-				local XYZ = nil
-
-				if inst and inst.prefab and inst.prefab == "robobee_78" then
-					XYZ = "sparks_robobee_78"
-				elseif inst and inst.prefab and inst.prefab == "robobee_caterpillar" then
-					XYZ = "sparks_robobee_caterpillar"
-				else
-					XYZ = "sparks_robobee"
-				end
-
-				local flash = SpawnPrefab(XYZ)
+				local flash = SpawnPrefab("sparks_robobee")
 				if flash then
 					flash.Transform:SetPosition(inst.Transform:GetWorldPosition())
 				end
