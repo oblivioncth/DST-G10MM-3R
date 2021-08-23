@@ -323,14 +323,9 @@ GLOBAL.PREFAB_SKINS.statuerobobee =
 	"statuerobobee_78",
 	"statuerobobee_caterpillar",
 }
-
-GLOBAL.PREFAB_SKINS_IDS = {}
-for prefab,skins in pairs(PREFAB_SKINS) do
-	GLOBAL.PREFAB_SKINS_IDS[prefab] = {}
-	for k,v in pairs(skins) do
-		GLOBAL.PREFAB_SKINS_IDS[prefab][v] = k
-	end
-end
+GLOBAL.PREFAB_SKINS_IDS.statuerobobee = {}
+GLOBAL.PREFAB_SKINS_IDS.statuerobobee.statuerobobee_78 = 1 -- lua is 1 indexed
+GLOBAL.PREFAB_SKINS_IDS.statuerobobee.statuerobobee_caterpillar = 2 -- lua is 1 indexed
 
 local function RecipePopupPostConstruct( widget )
 	local _GetSkinsList = widget.GetSkinsList
