@@ -6,9 +6,6 @@ local assets =
 
 local brain = require("brains/robobeebrain")
 
-local WAKE_TO_FOLLOW_DISTANCE = 15
-local SLEEP_NEAR_LEADER_DISTANCE = 0
-
 local function OnStopFollowing(inst)
 	inst:RemoveTag("companion")
 end

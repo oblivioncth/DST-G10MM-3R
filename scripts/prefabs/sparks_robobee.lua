@@ -5,6 +5,7 @@ local assets =
 
 local function onupdate(inst, dt)
 	if inst.sound then
+		-- Could play sound here
 		inst.sound = nil
 	end
 
