@@ -74,10 +74,6 @@ Assets = {
 	Asset("IMAGE", "images/map_icons/robobee_caterpillar.tex"),
 }
 
--- ### Import utilities ###
-modimport("libs/engine.lua")
-Load("libs/item_skins_api")
-
 -- ### Add Mini-map Images ###
 AddMinimapAtlas("images/map_icons/statuerobobee_map.xml")
 AddMinimapAtlas("images/map_icons/statuerobobee_map_full.xml")
@@ -96,6 +92,10 @@ AddMinimapAtlas("images/map_icons/statuerobobee_map_full_caterpillar.xml")
 AddMinimapAtlas("images/map_icons/statuerobobee_map_icebox_caterpillar.xml")
 AddMinimapAtlas("images/map_icons/statuerobobee_map_full_icebox_caterpillar.xml")
 AddMinimapAtlas("images/map_icons/robobee_caterpillar.xml")
+
+-- ### Import utilities ###
+modimport("libs/engine.lua")
+Load("libs/item_skins_api")
 
 -- ### Define Base Parameters ("Constants") ###
 local DEF_ROBOBEE_SIGHT_DIST = 15
