@@ -21,17 +21,6 @@ local function MakeRobobeeSkin( name )
 		end
 	end
 
-	local function OnRemove(inst)
-		if inst.components.inventory and inst.components.inventory:NumItems() > 0 then
-			inst.components.inventory:DropEverything(true, false)
-		end
-		if inst.components.homeseeker and inst.components.homeseeker:HasHome() and inst.components.homeseeker.home.components.childspawner and inst.components.homeseeker.home.components.childspawner.numchildrenoutside > 0 then
-			table.remove(inst.components.homeseeker.home.components.childspawner.childrenoutside, inst)
-			inst.components.homeseeker.home.components.childspawner.numchildrenoutside = 0
-			inst.components.homeseeker.home.components.childspawner.childreninside = 1
-		end
-	end
-
 	local function fn()
 		local inst = CreateEntity()
 
