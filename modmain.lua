@@ -100,6 +100,52 @@ AddMinimapAtlas("images/map_icons/statuerobobee_map_icebox_caterpillar.xml")
 AddMinimapAtlas("images/map_icons/statuerobobee_map_full_icebox_caterpillar.xml")
 AddMinimapAtlas("images/map_icons/robobee_caterpillar.xml")
 
+-- ### Define Base Parameters ("Constants") ###
+local DEF_ROBOBEE_SIGHT_DIST = 15
+local DEF_ROBOBEE_CONT_PICK_DIST = 15
+local DEF_INCLUSION_TAGS = {"pickable", "robobee_transportable"}
+local DEF_EXCLUSION_TAGS = {"robobee_target", "locomotor", "robobee_excluded", "fire"}
+
+-- ### Handle User Config and Define Selection/Derivative Parameters ###
+
+-- Config named constants
+local CF_RECIPE_AVAIL_OBTAIN = 1
+local CF_RECIPE_AVAIL_SHADOW = 2
+local CF_RECIPE_AVAIL_PRESTIHAT = 3
+local CF_RECIPE_AVAIL_ALCHMY = 4
+local CF_RECIPE_AVAIL_SCIENCE = 5
+local CF_RECIPE_AVAIL_ALWAYS = 6
+local CF_RECIPE_DIFF_EASY = 1
+local CF_RECIPE_DIFF_DEFAULT = 2
+local CF_RECIPE_DIFF_HARD = 3
+local CF_CONTAINER_CHEST = 1
+local CF_CONTAINER_ICEBOX = 0
+local CF_INCLUDE_STRUCT_NO = 1
+local CF_INCLUDE_STRUCT_YES = 2
+local CF_INCLUDE_CROPS_NO = 1
+local CF_INCLUDE_CROPS_YES = 2
+local CF_EXCLUDED_ITEMS_NONE = 1
+local CF_EXCLUDED_ITEMS_FLOWERS = 2
+local CF_EXCLUDED_ITEMS_MEATS = 3
+local CF_EXCLUDED_ITEMS_VEGFRUIT = 4
+local CF_HARVEST_LEVEL_FULL = 1
+local CF_HARVEST_LEVEL_HALF = 2
+local CF_HARVEST_LEVEL_ANY = 3
+local CF_ROBOEE_SPEED_SLOWER = 3
+local CF_ROBOEE_SPEED_DEFAULT = 4
+local CF_ROBOEE_SPEED_FASTER = 6
+local CF_ROBOEE_SPEED_VERYFAST = 8
+
+-- Read config
+cfVal_chestIceBox = GetModConfigData("chesticeboxconfig")
+cfVal_robobeeTech = GetModConfigData("robobeetechconfig")
+cfVal_robobeeStatueRecipe = GetModConfigData("robobeestatuerecipeconfig")
+cfVal_includeStructures = GetModConfigData("includestructures")
+cfVal_includeCrops = GetModConfigData("includecrops")
+cfVal_excludeItems = GetModConfigData("excludeitemsconfig")
+cfVal_whenToHarvest = GetModConfigData("whentoharvest")
+cfVal_robobeeSpeed = GetModConfigData("robobee_speed")
+
 -- ### Behavior helper functions ###
 function RobobeePickableItems(inst)
 	if TheWorld.ismastersim then
@@ -113,24 +159,28 @@ function RobobeeExcludedItems(inst)
 	end
 end
 
--- ### Define Default Behavior ###
+-- [### Main Mod Setup ###]
 
--- Sight/Interact Distance
-GLOBAL.ROBOBEE_SEE_OBJECT_DIST = 15
+-- Set Sight/Interact Distance
+GLOBAL.ROBOBEE_SEE_OBJECT_DIST = DEF_ROBOBEE_SIGHT_DIST
 GLOBAL.ROBOBEE_KEEP_PICKING_DIST = 15
 
--- Storage Container
-GLOBAL.STATUEROBOBEE_CONTAINER = "chest"
+-- Set Inclusions
+GLOBAL.STATUEROBOBEE_INCLUDETAGS = {}
+for _,tag in ipairs(DEF_INCLUSION_TAGS) do table.insert(STATUEROBOBEE_INCLUDETAGS, tag) end
 
--- Inclusions
-GLOBAL.STATUEROBOBEE_INCLUDETAGS = {"pickable", "robobee_transportable"}
+if cfVal_includeStructures == CF_INCLUDE_STRUCT_YES then
+	table.insert(STATUEROBOBEE_INCLUDETAGS, "readyforharvest")
+	table.insert(STATUEROBOBEE_INCLUDETAGS, "dried")
+	table.insert(STATUEROBOBEE_INCLUDETAGS, "harvestable")
+end
 
 local manure =
 	{"poop",
 	"guano",
 	"spoiled_food",
 	"glommerfuel",}
-for _,v in ipairs(manure) do AddPrefabPostInit(v, RobobeePickableItems) end
+for _,prefab in ipairs(manure) do AddPrefabPostInit(prefab, RobobeePickableItems) end
 
 local resources =
 	{"cutreeds",
@@ -149,7 +199,7 @@ local resources =
 	"twiggy_nut",
 	"spidergland",
 	"silk",}
-for _,v in ipairs(resources) do AddPrefabPostInit(v, RobobeePickableItems) end
+for _,prefab in ipairs(resources) do AddPrefabPostInit(prefab, RobobeePickableItems) end
 
 local other =
 	{"charcoal",
@@ -162,19 +212,160 @@ local other =
 	"slurper_pelt",
 	"houndstooth",
 	"beefalowool"}
-for _,v in ipairs(other) do AddPrefabPostInit(v, RobobeePickableItems) end
+for _,prefab in ipairs(other) do AddPrefabPostInit(prefab, RobobeePickableItems) end
 
--- Exclusions
-GLOBAL.STATUEROBOBEE_EXCLUDETAGS = {"robobee_target", "locomotor", "robobee_excluded", "fire"}
-AddPrefabPostInit("sculptingtable", ForbiddenStructuresPostInit)
+if cfVal_excludeItems ~= CF_EXCLUDED_ITEMS_MEATS then
+	local meats_eggs =
+		{"meat",
+		"monstermeat",
+		"monstermeat_dried",
+		"meat_dried",
+		"smallmeat_dried",
+		"smallmeat",
+		"drumstick",
+		"batwing",
+		"plantmeat",
+		"fish",
+		"eel",
+		"bird_egg",
+		"tallbirdegg",
+		"froglegs",}
+	for _,prefab in ipairs(meats_eggs) do AddPrefabPostInit(prefab, RobobeePickableItems) end
+end
 
--- Harvest Level
-GLOBAL.ROBOBEE_HARVEST = 1
+if cfVal_excludeItems ~= CF_EXCLUDED_ITEMS_VEGFRUIT then
+	local plants_shrooms =
+		{"berries",
+		"berries_juicy",
+		"carrot",
+		"cactus_meat",
+		"watermelon",
+		"dragonfruit",
+		"pomegranate",
+		"durian",
+		"eggplant",
+		"pumpkin",
+		"cave_banana",
+		"cactus_flower",
+		"seeds",
+		"red_cap",
+		"green_cap",
+		"blue_cap",
+		"petals",
+		"petals_evil",
+		"foliage",
+		"lightbulb",}
+	for _,prefab in ipairs(plants_shrooms) do AddPrefabPostInit(prefab, RobobeePickableItems) end
+end
 
--- Move speed
-GLOBAL.ROBOBEE_MOVESPEED = 4
+-- Set Exclusions
+GLOBAL.STATUEROBOBEE_EXCLUDETAGS = {}
+for _,tag in ipairs(DEF_EXCLUSION_TAGS) do table.insert(STATUEROBOBEE_EXCLUDETAGS, tag) end
 
--- Component Modifications
+if cfVal_includeStructures == CF_INCLUDE_STRUCT_NO then
+	table.insert(STATUEROBOBEE_EXCLUDETAGS, "structure")
+end
+
+AddPrefabPostInit("sculptingtable", RobobeeExcludedItems)
+
+if cfVal_includeCrops == CF_INCLUDE_CROPS_NO then
+	local PLANT_DEFS = require("prefabs/farm_plant_defs").PLANT_DEFS
+	for _,plant in ipairs(PLANT_DEFS) do AddPrefabPostInit(plant.prefab, RobobeeExcludedItems) end
+
+	local WEED_DEFS = require("prefabs/weed_defs").WEED_DEFS
+	for _,plant in ipairs(WEED_DEFS) do AddPrefabPostInit(plant.prefab, RobobeeExcludedItems) end
+end
+
+if cfVal_excludeItems == CF_EXCLUDED_ITEMS_FLOWERS then
+	local flowers =
+		{"flower",
+		"flower_evil",
+		"cave_fern",
+		"succulent_plant",
+		"flower_rose",
+		"flower_withered",}
+	for _,prefab in ipairs(flowers) do AddPrefabPostInit(prefab, RobobeeExcludedItems) end
+end
+
+if cfVal_excludeItems == CF_EXCLUDED_ITEMS_MEATS then
+	AddPrefabPostInit("meatrack", RobobeeExcludedItems)
+end
+
+if cfVal_excludeItems == CF_EXCLUDED_ITEMS_VEGFRUIT then
+	AddPrefabPostInit("plant_normal", RobobeeExcludedItems)
+end
+
+-- Set Harvest Level
+GLOBAL.ROBOBEE_HARVEST = cfVal_whenToHarvest
+
+-- Set Move speed
+GLOBAL.ROBOBEE_MOVESPEED = cfVal_robobeeSpeed
+
+-- Set Container
+GLOBAL.STATUEROBOBEE_CONTAINER = cfVal_chestIceBox == CF_CONTAINER_CHEST and "chest" or "icebox" 
+
+-- Set Recipe Acquisition Method
+local robobee_tech = TECH.LOST
+
+if cfVal_robobeeTech == CF_RECIPE_AVAIL_OBTAIN then
+	function GlommerStatuePostInit(inst)
+		if TheWorld.ismastersim then
+			if inst.components.lootdropper then
+				inst.components.lootdropper:AddChanceLoot("statuerobobee_blueprint", 1)
+			end
+		end
+	end
+	AddPrefabPostInit("statueglommer", GlommerStatuePostInit)
+
+	function RaidBossesRecipeDropPostInit(inst)
+		if TheWorld.ismastersim then
+			if inst.components.lootdropper then
+				inst.components.lootdropper:AddChanceLoot("statuerobobee_blueprint", 0.2)
+			end
+		end
+	end
+	local bosses = {"dragonfly", "beequeen"}
+	for _,boss in ipairs(bosses) do AddPrefabPostInit(boss, RaidBossesRecipeDropPostInit) end
+
+	function ClockworkJunkRecipeDropPostInit(inst)
+		if TheWorld.ismastersim then
+			if inst.components.lootdropper then
+				inst.components.lootdropper:AddChanceLoot("statuerobobee_blueprint", 0.01)
+			end
+		end
+	end
+	local junkpiles = {"chessjunk1", "chessjunk2", "chessjunk3"}
+	for _,junkpile in ipairs(junkpiles) do AddPrefabPostInit(junkpile, ClockworkJunkRecipeDropPostInit) end
+elseif cfVal_robobeeTech == CF_RECIPE_AVAIL_SHADOW then
+	robobee_tech = TECH.MAGIC_THREE
+elseif cfVal_robobeeTech == CF_RECIPE_AVAIL_PRESTIHAT then
+	robobee_tech = TECH.MAGIC_TWO
+elseif cfVal_robobeeTech == CF_RECIPE_AVAIL_ALCHMY then
+	robobee_tech = TECH.SCIENCE_TWO
+elseif cfVal_robobeeTech == CF_RECIPE_AVAIL_SCIENCE then
+	robobee_tech = TECH.SCIENCE_ONE
+elseif cfVal_robobeeTech == CF_RECIPE_AVAIL_ALWAYS then
+	robobee_tech = TECH.NONE
+end
+
+-- Add Recipe
+local imageatlas = cfVal_chestIceBox == CF_CONTAINER_CHEST and "statuerobobee" or "statuerobobee_icebox"
+
+local statuerecipe = AddRecipe("statuerobobee",
+{  Ingredient("gears", cfVal_robobeeStatueRecipe), Ingredient("glommerflower", 1), Ingredient("glommerwings", 1)},
+RECIPETABS.SCIENCE,
+robobee_tech,
+"statuerobobee_placer",
+1.5,
+nil,
+nil,
+nil,
+"images/inventoryimages/" .. imageatlas .. ".xml",
+"statuerobobee.tex")
+statuerecipe.sortkey = -99
+statuerecipe.skinnable = true
+
+-- Make Component Modifications
 AddComponentPostInit("pickable", function(Pickable)
 	local OldPick = Pickable.Pick
 	local OldRegen = Pickable.Regen
@@ -280,7 +471,7 @@ AddComponentPostInit("childspawner", function(ChildSpawner)
 	end
 end)
 
--- New ACTIONS
+-- Add New Actions
 local BREAKSTACK = Action({ priority= 10 })
 BREAKSTACK.str = "Break Stack"
 BREAKSTACK.id = "BREAKSTACK"
@@ -302,7 +493,7 @@ AddComponentAction("SCENE", "stackbreaker", function(inst, doer, actions, right)
 	end
 end)
 
--- Container Modifications:
+-- Make Container Modifications:
 local containers = require("containers")
 local oldwidgetsetup = containers.widgetsetup
 
@@ -317,7 +508,7 @@ containers.widgetsetup = function(container, prefab, ...)
 	oldwidgetsetup(container, prefab, ...)
 end
 
--- Skin Implementation
+-- Add Skins
 GLOBAL.PREFAB_SKINS.statuerobobee =
 {
 	"statuerobobee_78",
@@ -486,182 +677,3 @@ AddComponentPostInit("playercontroller", PlayerControllerPostInit)
 
 -- Add Game Strings:
 Load("scripts/robobee_strings")
-
--- ### Define/Alter Config Based Behavior Parameters ###
-
--- Config named constants
-local CF_RECIPE_AVAIL_OBTAIN = 1
-local CF_RECIPE_AVAIL_SHADOW = 2
-local CF_RECIPE_AVAIL_PRESTIHAT = 3
-local CF_RECIPE_AVAIL_ALCHMY = 4
-local CF_RECIPE_AVAIL_SCIENCE = 5
-local CF_RECIPE_AVAIL_ALWAYS = 6
-local CF_RECIPE_DIFF_EASY = 1
-local CF_RECIPE_DIFF_DEFAULT = 2
-local CF_RECIPE_DIFF_HARD = 3
-local CF_CONTAINER_CHEST = 1
-local CF_CONTAINER_ICEBOX = 0
-local CF_INCLUDE_STRUCT_NO = 1
-local CF_INCLUDE_STRUCT_YES = 2
-local CF_INCLUDE_CROPS_NO = 1
-local CF_INCLUDE_CROPS_YES = 2
-local CF_EXCLUDED_ITEMS_NONE = 1
-local CF_EXCLUDED_ITEMS_FLOWERS = 2
-local CF_EXCLUDED_ITEMS_MEATS = 3
-local CF_EXCLUDED_ITEMS_VEGFRUIT = 4
-local CF_HARVEST_LEVEL_FULL = 1
-local CF_HARVEST_LEVEL_HALF = 2
-local CF_HARVEST_LEVEL_ANY = 3
-local CF_ROBOEE_SPEED_SLOWER = 3
-local CF_ROBOEE_SPEED_DEFAULT = 4
-local CF_ROBOEE_SPEED_FASTER = 6
-local CF_ROBOEE_SPEED_VERYFAST = 8
-
--- Read Config: Container
-GLOBAL.STATUEROBOBEE_CONTAINER = GetModConfigData("chesticeboxconfig") == CF_CONTAINER_CHEST and "chest" or "icebox" 
-local imageatlas = GetModConfigData("chesticeboxconfig") == CF_CONTAINER_CHEST and "statuerobobee" or "statuerobobee_icebox"
-
--- Read Config: Recipe Availability
-local robobee_tech = TECH.LOST
-
-if GetModConfigData("robobeetechconfig") == CF_RECIPE_AVAIL_OBTAIN then
-
-	function GlommerStatuePostInit(inst)
-		if TheWorld.ismastersim then
-			if inst.components.lootdropper then
-				inst.components.lootdropper:AddChanceLoot("statuerobobee_blueprint", 1)
-			end
-		end
-	end
-	AddPrefabPostInit("statueglommer", GlommerStatuePostInit)
-
-	function RaidBossesRecipeDropPostInit(inst)
-		if TheWorld.ismastersim then
-			if inst.components.lootdropper then
-				inst.components.lootdropper:AddChanceLoot("statuerobobee_blueprint", 0.2)
-			end
-		end
-	end
-	local bosses = {"dragonfly", "beequeen"}
-	for _,v in ipairs(bosses) do AddPrefabPostInit(v, RaidBossesRecipeDropPostInit) end
-
-	function ClockworkJunkRecipeDropPostInit(inst)
-		if TheWorld.ismastersim then
-			if inst.components.lootdropper then
-				inst.components.lootdropper:AddChanceLoot("statuerobobee_blueprint", 0.01)
-			end
-		end
-	end
-	local junkpiles = {"chessjunk1", "chessjunk2", "chessjunk3"}
-	for _,v in ipairs(junkpiles) do AddPrefabPostInit(v, ClockworkJunkRecipeDropPostInit) end
-
-elseif GetModConfigData("robobeetechconfig") == CF_RECIPE_AVAIL_SHADOW then
-	robobee_tech = TECH.MAGIC_THREE
-elseif GetModConfigData("robobeetechconfig") == CF_RECIPE_AVAIL_PRESTIHAT then
-	robobee_tech = TECH.MAGIC_TWO
-elseif GetModConfigData("robobeetechconfig") == CF_RECIPE_AVAIL_ALCHMY then
-	robobee_tech = TECH.SCIENCE_TWO
-elseif GetModConfigData("robobeetechconfig") == CF_RECIPE_AVAIL_SCIENCE then
-	robobee_tech = TECH.SCIENCE_ONE
-elseif GetModConfigData("robobeetechconfig") == CF_RECIPE_AVAIL_ALWAYS then
-	robobee_tech = TECH.NONE
-end
-
--- Read Config: Recipe Difficulty
-local statuerecipe = AddRecipe("statuerobobee",
-{  Ingredient("gears", GetModConfigData("robobeestatuerecipeconfig")), Ingredient("glommerflower", 1), Ingredient("glommerwings", 1)},
-RECIPETABS.SCIENCE,
-robobee_tech,
-"statuerobobee_placer",
-1.5,
-nil,
-nil,
-nil,
-"images/inventoryimages/" .. imageatlas .. ".xml",
-"statuerobobee.tex")
-statuerecipe.sortkey = -99
-statuerecipe.skinnable = true
-
--- Read Config: Include Structures
-if GetModConfigData("includestructures") == CF_INCLUDE_STRUCT_YES then
-	table.insert(STATUEROBOBEE_INCLUDETAGS, "readyforharvest")
-	table.insert(STATUEROBOBEE_INCLUDETAGS, "dried")
-	table.insert(STATUEROBOBEE_INCLUDETAGS, "harvestable")
-else
-	table.insert(STATUEROBOBEE_EXCLUDETAGS, "structure")
-end
-
--- Read Config: Include Crops
-if GetModConfigData("includecrops") == CF_INCLUDE_CROPS_NO then
-	local PLANT_DEFS = require("prefabs/farm_plant_defs").PLANT_DEFS
-	for _,v in ipairs(PLANT_DEFS) do AddPrefabPostInit(v.prefab, RobobeeExcludedItems) end
-
-	local WEED_DEFS = require("prefabs/weed_defs").WEED_DEFS
-	for _,v in ipairs(WEED_DEFS) do AddPrefabPostInit(v.prefab, RobobeeExcludedItems) end
-end
-
--- Read Config: Excluded Items
-if GetModConfigData("excludeitemsconfig") == CF_EXCLUDED_ITEMS_FLOWERS then
-	local flowers =
-		{"flower",
-		"flower_evil",
-		"cave_fern",
-		"succulent_plant",
-		"flower_rose",
-		"flower_withered",}
-	for _,v in ipairs(flowers) do AddPrefabPostInit(v, RobobeeExcludedItems) end
-end
-
-if GetModConfigData("excludeitemsconfig") == CF_EXCLUDED_ITEMS_MEATS then
-	AddPrefabPostInit("meatrack", RobobeeExcludedItems)
-else
-	local meats_eggs =
-		{"meat",
-		"monstermeat",
-		"monstermeat_dried",
-		"meat_dried",
-		"smallmeat_dried",
-		"smallmeat",
-		"drumstick",
-		"batwing",
-		"plantmeat",
-		"fish",
-		"eel",
-		"bird_egg",
-		"tallbirdegg",
-		"froglegs",}
-	for _,v in ipairs(meats_eggs) do AddPrefabPostInit(v, RobobeePickableItems) end
-end
-
-if GetModConfigData("excludeitemsconfig") == CF_EXCLUDED_ITEMS_VEGFRUIT then
-	AddPrefabPostInit("plant_normal", RobobeeExcludedItems)
-else
-	local plants_shrooms =
-		{"berries",
-		"berries_juicy",
-		"carrot",
-		"cactus_meat",
-		"watermelon",
-		"dragonfruit",
-		"pomegranate",
-		"durian",
-		"eggplant",
-		"pumpkin",
-		"cave_banana",
-		"cactus_flower",
-		"seeds",
-		"red_cap",
-		"green_cap",
-		"blue_cap",
-		"petals",
-		"petals_evil",
-		"foliage",
-		"lightbulb",}
-	for _,v in ipairs(plants_shrooms) do AddPrefabPostInit(v, RobobeePickableItems) end
-end
-
--- Read Config: When to Harvest
-GLOBAL.ROBOBEE_HARVEST = GetModConfigData("whentoharvest")
-
--- Read Config: Move Speed
-GLOBAL.ROBOBEE_MOVESPEED = GetModConfigData("robobee_speed")

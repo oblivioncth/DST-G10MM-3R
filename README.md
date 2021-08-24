@@ -24,7 +24,7 @@ You can find its blueprint by mining the Glommer's Statue. In case you missed it
 
 # Remarks
 
- - Thanks to Kzisor and Ysovuka for their env.lua library
+ - Thanks to Kzisor and Ysovuka for their engine.lua library
  - **Reuploading this mod is not allowed. All copies will be reported.**
 
 Have fun!
