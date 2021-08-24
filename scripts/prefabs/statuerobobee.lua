@@ -10,6 +10,27 @@ local assets =
 
 local PLACER_SCALE = 1.55
 
+local function TurnOff(inst, instant)
+	inst.on = false
+	c_announce("THE DRONE IS OFF")
+	
+	if inst.components.childspawner then
+		print("[G10MM-3R]: Is Child Spawner")
+		for _,child in pairs(inst.components.childspawner.childrenoutside) do
+			print("[G10MM-3R]: Child - ", child)
+			if child and child:IsValid() then
+				print("[G10MM-3R]: Pushing Event - robobee_homeoff")
+				child:PushEvent("robobee_homeoff")
+			end
+		end
+	end
+end
+
+local function TurnOn(inst, instant)
+	inst.on = true
+	c_announce("THE DRONE IS ON")
+end
+
 local function UpdateSwapBee(inst)
 	if inst.components.childspawner and inst.components.childspawner.numchildrenoutside <= 0 then
 		inst.SoundEmitter:PlaySound("robobeesounds/robobeesounds/sleep", "zzz") 
@@ -157,8 +178,8 @@ local function OnHit(inst, worker, workleft)
 end
 
 local function CheckAreaAndSpawnBee(inst)
-	if inst.components.childspawner and inst.components.childspawner.numchildrenoutside <= 0 then
-		
+	if inst.components.childspawner and inst.components.childspawner.numchildrenoutside <= 0 and inst.on then
+		--print("[G10MM-3R]: CheckAreaAndSpawnBee - Proceeding")
 		local target = FindEntityForRobobee(inst)
 		
 		local cantakeitem = nil
@@ -381,6 +402,15 @@ local function fn()
 	
 	inst:AddComponent("sanityaura")
 	inst.components.sanityaura.aura = 0
+
+	inst:AddComponent("machine")
+	inst.components.machine.turnonfn = TurnOn
+	inst.components.machine.turnofffn = TurnOff
+	inst.components.machine.caninteractfn = function(inst) return true end
+	inst.components.machine.cooldowntime = 0.5
+	inst.on = false; -- Makes it clear this variable exists, since otherwise it would be dynamically added in TurnOn()
+	
+	inst.components.machine:TurnOn()
 
 	MakeHauntableWork(inst)
 			

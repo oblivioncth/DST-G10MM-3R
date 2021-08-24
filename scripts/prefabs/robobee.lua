@@ -80,6 +80,19 @@ local function fn()
 			inst.sg:GoToState("idle")
 		end
 	end)
+	
+	inst:ListenForEvent("robobee_homeoff", function(inst)
+		--print("[G10MM-3R]: Received Event - robobee_homeoff")
+		if inst.bufferedaction ~= nil then
+			inst:ClearBufferedAction()
+		end
+		if inst.sg ~= nil then
+			inst.sg:GoToState("idle")
+		end
+		if inst.components.homeseeker.home and inst.components.homeseeker.home:IsValid() then
+			inst.components.homeseeker:GoHome(true)
+		end
+	end)
 
 	inst:ListenForEvent("freeze", function(inst)
 		--print("Frozen!")

@@ -255,6 +255,7 @@ local function GoHomeCheck(inst)
 		and inst.components.homeseeker
 		and inst.components.homeseeker:HasHome()
 		and inst.components.homeseeker.home:IsValid()
+		and inst.components.homeseeker.home.on
 		and inst.components.homeseeker.home.passtargettobee == nil
 		and potentialtargettest(inst, (inst.components.homeseeker.home.passtargettobee ~= nil and inst.components.homeseeker.home.passtargettobee or nil), inst.components.homeseeker.home) == false
 		and inst.bufferedaction == nil
