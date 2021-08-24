@@ -1,10 +1,6 @@
 PrefabFiles = {
 	"robobee",
-	"robobee_78",
-	"robobee_caterpillar",
 	"statuerobobee",
-	"statuerobobee_78",
-	"statuerobobee_caterpillar",
 	"sparks_robobee",
 }
 
@@ -78,8 +74,9 @@ Assets = {
 	Asset("IMAGE", "images/map_icons/robobee_caterpillar.tex"),
 }
 
--- ### Import engine utilities ###
+-- ### Import utilities ###
 modimport("libs/engine.lua")
+Load("libs/item_skins_api")
 
 -- ### Add Mini-map Images ###
 AddMinimapAtlas("images/map_icons/statuerobobee_map.xml")
@@ -365,6 +362,18 @@ nil,
 statuerecipe.sortkey = -99
 statuerecipe.skinnable = true
 
+-- Add Skins
+MadeRecipeSkinnable("statuerobobee", {
+	statuerobobee_78 = {
+		atlas = "images/inventoryimages/" .. imageatlas .. "_78.xml",
+		image = "statuerobobee_78.tex",
+	},
+	statuerobobee_caterpillar = {
+		atlas = "images/inventoryimages/" .. imageatlas .. "_caterpillar.xml",
+		image = "statuerobobee_caterpillar.tex",
+	},
+})
+
 -- Make Component Modifications
 AddComponentPostInit("pickable", function(Pickable)
 	local OldPick = Pickable.Pick
@@ -450,7 +459,7 @@ AddComponentPostInit("spellcaster", function(SpellCaster)
 	SpellCaster.CanCast = function(self, doer, target, ...)
 
 		if target ~= nil and target:HasTag("robobee") then
-			-- Keep that dir ty magic away from my pure bee!
+			-- Keep that dirty magic away from my pure bee!
 			return false
 		else
 			return OldCanCast(self, doer, target, ...)
@@ -507,173 +516,6 @@ containers.widgetsetup = function(container, prefab, ...)
 	end
 	oldwidgetsetup(container, prefab, ...)
 end
-
--- Add Skins
-GLOBAL.PREFAB_SKINS.statuerobobee =
-{
-	"statuerobobee_78",
-	"statuerobobee_caterpillar",
-}
-GLOBAL.PREFAB_SKINS_IDS.statuerobobee = {}
-GLOBAL.PREFAB_SKINS_IDS.statuerobobee.statuerobobee_78 = 1 -- lua is 1 indexed
-GLOBAL.PREFAB_SKINS_IDS.statuerobobee.statuerobobee_caterpillar = 2 -- lua is 1 indexed
-
-local function RecipePopupPostConstruct( widget )
-	local _GetSkinsList = widget.GetSkinsList
-	widget.GetSkinsList = function( self )
-		if self.recipe.skinnable == nil then
-			return _GetSkinsList( self )
-		end
-
-		self.skins_list = {}
-		if self.recipe and PREFAB_SKINS[self.recipe.name] then
-			for _,item_type in pairs(PREFAB_SKINS[self.recipe.name]) do
-				local data  = {}
-				    data.type = type
-				    data.item = item_type
-				    data.timestamp = nil
-				    table.insert(self.skins_list, data)
-			end
-	    end
-
-	    return self.skins_list
-	end
-
-	local GetName = function(var)
-		return STRINGS.SKIN_NAMES[var]
-	end
-
-	local _GetSkinOptions = widget.GetSkinOptions
-	widget.GetSkinOptions = function( self )
-		if self.recipe.skinnable == nil then
-			return _GetSkinOptions( self )
-		end
-
-		local skin_options = {}
-
-		table.insert(skin_options,
-		{
-			text = STRINGS.UI.CRAFTING.DEFAULT,
-			data = nil,
-			colour = SKIN_RARITY_COLORS["Common"],
-			new_indicator = false,
-			image =  {self.recipe.atlas or "images/inventoryimages.xml", self.recipe.image or self.recipe.name .. ".tex", "default.tex"},
-		})
-
-		local recipe_timestamp = Profile:GetRecipeTimestamp(self.recipe.name)
-		--print(self.recipe.name, "Recipe timestamp is ", recipe_timestamp)
-		if self.skins_list and TheNet:IsOnlineMode() then
-			for which = 1, #self.skins_list do
-				local image_name = self.skins_list[which].item
-
-				local rarity = GetRarityForItem("item", image_name)
-				local colour = rarity and SKIN_RARITY_COLORS[rarity] or SKIN_RARITY_COLORS["Common"]
-				local text_name = GetName(image_name) or SKIN_STRINGS.SKIN_NAMES["missing"]
-				local new_indicator = not self.skins_list[which].timestamp or (self.skins_list[which].timestamp > recipe_timestamp)
-
-				if image_name == "" then
-					image_name = "default"
-				else
-					image_name = string.gsub(image_name, "_none", "")
-				end
-
-				table.insert(skin_options,
-				{
-					text = text_name,
-					data = nil,
-					colour = colour,
-					new_indicator = new_indicator,
-					image = {self.recipe.atlas or image_name .. ".xml" or "images/inventoryimages.xml", image_name..".tex" or "default.tex", "default.tex"},
-				})
-			end
-
-	    else
-			self.spinner_empty = true
-	    end
-
-	    return skin_options
-
-	end
-end
-AddClassPostConstruct("widgets/recipepopup", RecipePopupPostConstruct)
-
-local function BuilderPostInit( builder )
-	local _MakeRecipeFromMenu = builder.MakeRecipeFromMenu
-	builder.MakeRecipeFromMenu = function( self, recipe, skin )
-		if recipe.skinnable == nil then
-			_MakeRecipeFromMenu( self, recipe, skin )
-
-		else
-
-			if recipe.placer == nil then
-				if self:KnowsRecipe(recipe.name) then
-					if self:IsBuildBuffered(recipe.name) or self:CanBuild(recipe.name) then
-						self:MakeRecipe(recipe, nil, nil, skin)
-					end
-				elseif CanPrototypeRecipe(recipe.level, self.accessible_tech_trees) and
-					self:CanLearn(recipe.name) and
-					self:CanBuild(recipe.name) then
-					self:MakeRecipe(recipe, nil, nil, skin, function()
-						self:ActivateCurrentResearchMachine()
-						self:UnlockRecipe(recipe.name)
-					end)
-				end
-			end
-		end
-	end
-
-	local _DoBuild = builder.DoBuild
-	builder.DoBuild = function( self, recname, pt, rotation, skin )
-		if GetValidRecipe(recname).skinnable then
-			if skin ~= nil then
-				if AllRecipes[recname]._oldproduct == nil then
-					GLOBAL.AllRecipes[recname]._oldproduct = AllRecipes[recname].product
-				end
-				GLOBAL.AllRecipes[recname].product = skin
-			else
-				if AllRecipes[recname]._oldproduct ~= nil then
-					GLOBAL.AllRecipes[recname].product = AllRecipes[recname]._oldproduct
-				end
-			end
-		end
-
-		return _DoBuild( self, recname, pt, rotation, skin )
-	end
-end
-AddComponentPostInit("builder", BuilderPostInit)
-
-local function PlayerControllerPostInit( playercontroller )
-	local OldStartBuildPlacementMode = playercontroller.StartBuildPlacementMode
-	playercontroller.StartBuildPlacementMode = function( self, recipe, skin )
-
-		if recipe ~= nil and recipe.skinnable ~= nil and skin ~= nil and (skin == "statuerobobee_78" or skin == "statuerobobee_caterpillar") then
-			self.placer_cached = nil
-			self.placer_recipe = recipe
-			self.placer_recipe_skin = skin
-
-			if self.placer ~= nil then
-				self.placer:Remove()
-			end
-
-			if skin == "statuerobobee_78" then
-				self.placer = SpawnPrefab("statuerobobee_placer_78")
-			else
-				self.placer = SpawnPrefab("statuerobobee_placer_caterpillar")
-			end
-
-			self.placer.components.placer:SetBuilder(self.inst, recipe)
-			self.placer.components.placer.testfn = function(pt, rot)
-				local builder = self.inst.replica.builder
-				return builder ~= nil and builder:CanBuildAtPoint(pt, recipe, rot)
-			end
-
-		else
-			return OldStartBuildPlacementMode(self, recipe, skin)
-		end
-
-	end
-end
-AddComponentPostInit("playercontroller", PlayerControllerPostInit)
 
 -- Add Game Strings:
 Load("scripts/robobee_strings")
