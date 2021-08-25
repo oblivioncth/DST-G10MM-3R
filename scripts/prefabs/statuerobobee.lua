@@ -29,13 +29,15 @@ end
 
 local function UpdateSwapBee(inst)
 	if inst.components.childspawner and inst.components.childspawner.numchildrenoutside <= 0 then
-		inst.SoundEmitter:PlaySound("robobeesounds/robobeesounds/sleep", "zzz") 
 		inst.AnimState:Show("SWAP_ROBOBEE") 
+		inst.MiniMapEntity:SetIcon(STATUEROBOBEE_CONTAINER == "chest" and ("statuerobobee_map_full" .. inst.robobeeSkinSuffix .. ".tex") or ("statuerobobee_map_full_icebox" .. inst.robobeeSkinSuffix .. ".tex"))
+		inst.SoundEmitter:PlaySound("robobeesounds/robobeesounds/sleep", "zzz") 
 		if inst.components.sanityaura then
 			inst.components.sanityaura.aura = TUNING.SANITYAURA_TINY/2
 		end
 	else 
 		inst.AnimState:Hide("SWAP_ROBOBEE") 
+		inst.MiniMapEntity:SetIcon(STATUEROBOBEE_CONTAINER == "chest" and ("statuerobobee_map" .. inst.robobeeSkinSuffix .. ".tex") or ("statuerobobee_map_icebox" .. inst.robobeeSkinSuffix .. ".tex"))
 		inst.SoundEmitter:KillSound("zzz")
 		if inst.components.sanityaura then
 			inst.components.sanityaura.aura = 0
@@ -63,15 +65,14 @@ end
 local function OnRobobeeSpawned(inst, child)
 	if inst.components.childspawner and child.components.follower and child.components.follower.leader ~= inst then
 		child.components.follower:SetLeader(inst)
-		inst.AnimState:Hide("SWAP_ROBOBEE")
-		inst.MiniMapEntity:SetIcon(STATUEROBOBEE_CONTAINER == "chest" and ("statuerobobee_map" .. inst.robobeeSkinSuffix .. ".tex") or ("statuerobobee_map_icebox" .. inst.robobeeSkinSuffix .. ".tex"))
+		inst:DoTaskInTime(0, function(inst) UpdateSwapBee(inst) end) -- Delay call until next frame because inst.components.childspawner.numchildrenoutside doesn't update until after this func
 		--print("Spawned Bee")
 	end
 end
 
 local function OnRobobeeBackHome(inst, child)
 	if child and child.components.inventory then
-		inst.AnimState:Show("SWAP_ROBOBEE")
+		inst:DoTaskInTime(0, function(inst) UpdateSwapBee(inst) end) -- Delay call until next frame because inst.components.childspawner.numchildrenoutside doesn't update until after this func
 		
 		if child.components.inventory:NumItems() ~= 0 then
 			-- transfer items to base
@@ -87,8 +88,6 @@ local function OnRobobeeBackHome(inst, child)
 		
 			UpdateContainerTable(inst)
 		end
-		
-		inst.MiniMapEntity:SetIcon(STATUEROBOBEE_CONTAINER == "chest" and ("statuerobobee_map_full" .. inst.robobeeSkinSuffix .. ".tex") or ("statuerobobee_map_full_icebox" .. inst.robobeeSkinSuffix .. ".tex"))
 		--print("Bee Going Home")
 	end
 end
@@ -243,14 +242,6 @@ end
 local function OnBuilt(inst)
 	inst.AnimState:PlayAnimation("building")
 	inst.AnimState:PushAnimation("idle", true)
-end
-
-local function UpdateMapIcon(inst)
-	if inst.components.childspawner and inst.components.childspawner.numchildrenoutside <= 0 then
-		inst.MiniMapEntity:SetIcon(STATUEROBOBEE_CONTAINER == "chest" and ("statuerobobee_map_full" .. inst.robobeeSkinSuffix .. ".tex") or ("statuerobobee_map_full_icebox" .. inst.robobeeSkinSuffix .. ".tex"))	
-	else
-		inst.MiniMapEntity:SetIcon(STATUEROBOBEE_CONTAINER == "chest" and ("statuerobobee_map_" .. inst.robobeeSkinSuffix ..".tex") or ("statuerobobee_map_icebox" .. inst.robobeeSkinSuffix .. ".tex"))
-	end
 end
 
 local function MakeSureHasChild(inst)
@@ -412,17 +403,12 @@ local function fn()
 			
 	inst:DoPeriodicTask(3, function(inst) CheckAreaAndSpawnBee(inst) end)
 			
-	inst:DoPeriodicTask(100*FRAMES, function(inst)
-		UpdateSwapBee(inst)
-	end)
-	
 	inst:DoTaskInTime(0, function(inst)
 		local pt = Vector3(inst.Transform:GetWorldPosition())
 	
 		if TheWorld.Map:IsPassableAtPoint(pt.x, pt.y, pt.z, false, true) then
 			UpdateContainerTable(inst) 
 			UpdateSwapBee(inst)
-			UpdateMapIcon(inst)
 			MakeSureHasChild(inst)
 		else
 			--G10MM-3R Statue CANNOT be spawned in ANY CASE in an invalid area
