@@ -210,12 +210,14 @@ end
 
 local function StartPickingCondition(inst)
 	if inst.somethingbroke == nil then
-		return inst.pickable_target == nil
+		return inst.components.homeseeker and inst.components.homeseeker:HasHome()
+			and inst.components.homeseeker.home.on
+			and inst.pickable_target == nil
 			and inst.stacktobreak == nil
 			and inst:IsNear(inst.components.follower.leader, ROBOBEE_KEEP_PICKING_DIST)
 			and inst.components.follower.leader
 			and inst.components.follower.leader.components.childspawner.numchildrenoutside > 0
-			and ((inst.components.homeseeker and inst.components.homeseeker:HasHome() and inst.components.homeseeker.home.passtargettobee ~= nil and inst.components.homeseeker.home.passtargettobee.robobee_picker == nil) or true)
+			and ((inst.components.homeseeker.home.passtargettobee ~= nil and inst.components.homeseeker.home.passtargettobee.robobee_picker == nil) or true)
 			and potentialtargettest(inst, (inst.components.homeseeker.home.passtargettobee ~= nil and inst.components.homeseeker.home.passtargettobee or nil), inst.components.homeseeker.home) == true
 			and not (inst.components.freezable and inst.components.freezable:IsFrozen())
 	else
