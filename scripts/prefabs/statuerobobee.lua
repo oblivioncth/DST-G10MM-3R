@@ -15,7 +15,7 @@ local function TurnOff(inst, instant)
 	
 	if inst.components.childspawner then
 		for _,child in pairs(inst.components.childspawner.childrenoutside) do
-			if child and child:IsValid() the
+			if child and child:IsValid() then
 				--print("[G10MM-3R]: Pushed Event - robobee_homeoff")
 				child:PushEvent("robobee_homeoff")
 			end
