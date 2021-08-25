@@ -12,14 +12,11 @@ local PLACER_SCALE = 1.55
 
 local function TurnOff(inst, instant)
 	inst.on = false
-	c_announce("THE DRONE IS OFF")
 	
 	if inst.components.childspawner then
-		print("[G10MM-3R]: Is Child Spawner")
 		for _,child in pairs(inst.components.childspawner.childrenoutside) do
-			print("[G10MM-3R]: Child - ", child)
-			if child and child:IsValid() then
-				print("[G10MM-3R]: Pushing Event - robobee_homeoff")
+			if child and child:IsValid() the
+				--print("[G10MM-3R]: Pushed Event - robobee_homeoff")
 				child:PushEvent("robobee_homeoff")
 			end
 		end
@@ -28,7 +25,6 @@ end
 
 local function TurnOn(inst, instant)
 	inst.on = true
-	c_announce("THE DRONE IS ON")
 end
 
 local function UpdateSwapBee(inst)
