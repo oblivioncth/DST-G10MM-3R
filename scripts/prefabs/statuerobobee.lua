@@ -10,32 +10,23 @@ local assets =
 
 local PLACER_SCALE = 1.55
 
-local function TurnOff(inst, instant)
-	inst.on = false
-	
-	if inst.components.childspawner then
-		for _,child in pairs(inst.components.childspawner.childrenoutside) do
-			if child and child:IsValid() then
-				--print("[G10MM-3R]: Pushed Event - robobee_homeoff")
-				child:PushEvent("robobee_homeoff")
-			end
-		end
-	end
-end
-
-local function TurnOn(inst, instant)
-	inst.on = true
-end
-
 local function UpdateSwapBee(inst)
 	if inst.components.childspawner and inst.components.childspawner.numchildrenoutside <= 0 then
-		inst.AnimState:Show("SWAP_ROBOBEE") 
+	
+		if inst.on then
+			inst.AnimState:PlayAnimation("idle", true)
+			inst.AnimState:Show("SWAP_ROBOBEE")
+		else
+			inst.AnimState:PlayAnimation("off", true)
+		end
+	
 		inst.MiniMapEntity:SetIcon(STATUEROBOBEE_CONTAINER == "chest" and ("statuerobobee_map_full" .. inst.robobeeSkinSuffix .. ".tex") or ("statuerobobee_map_full_icebox" .. inst.robobeeSkinSuffix .. ".tex"))
 		inst.SoundEmitter:PlaySound("robobeesounds/robobeesounds/sleep", "zzz") 
 		if inst.components.sanityaura then
 			inst.components.sanityaura.aura = TUNING.SANITYAURA_TINY/2
 		end
 	else 
+		inst.AnimState:PlayAnimation("idle", true)
 		inst.AnimState:Hide("SWAP_ROBOBEE") 
 		inst.MiniMapEntity:SetIcon(STATUEROBOBEE_CONTAINER == "chest" and ("statuerobobee_map" .. inst.robobeeSkinSuffix .. ".tex") or ("statuerobobee_map_icebox" .. inst.robobeeSkinSuffix .. ".tex"))
 		inst.SoundEmitter:KillSound("zzz")
@@ -305,6 +296,31 @@ local function OnEnableHelper(inst, enabled)
 		--print("disabling helper")
 		inst.helper:Remove()
 		inst.helper = nil
+	end
+end
+
+local function TurnOff(inst, instant)
+	inst.on = false
+	
+	if inst.components.childspawner then
+		for _,child in pairs(inst.components.childspawner.childrenoutside) do
+			if child and child:IsValid() then
+				--print("[G10MM-3R]: Pushed Event - robobee_homeoff")
+				child:PushEvent("robobee_homeoff")
+			end
+		end
+	end
+	
+	if inst.components.childspawner and inst.components.childspawner.numchildrenoutside <= 0 then
+		UpdateSwapBee(inst)
+	end
+end
+
+local function TurnOn(inst, instant)
+	inst.on = true
+	
+	if inst.components.childspawner and inst.components.childspawner.numchildrenoutside <= 0 then
+		UpdateSwapBee(inst)
 	end
 end
 
