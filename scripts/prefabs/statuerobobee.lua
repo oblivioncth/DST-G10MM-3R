@@ -10,30 +10,46 @@ local assets =
 
 local PLACER_SCALE = 1.55
 
-local function UpdateSwapBee(inst)
+local function RobobeeIsHome(inst)
+	-- Uses 'if' instead of and/or to force false when inst.components.childspawner is nil, so that only true/false can be returned
 	if inst.components.childspawner and inst.components.childspawner.numchildrenoutside <= 0 then
-	
-		if inst.on then
-			inst.AnimState:PlayAnimation("idle", true)
-			inst.AnimState:Show("SWAP_ROBOBEE")
-		else
-			inst.AnimState:PlayAnimation("off", true)
-		end
-	
-		inst.MiniMapEntity:SetIcon(STATUEROBOBEE_CONTAINER == "chest" and ("statuerobobee_map_full" .. inst.robobeeSkinSuffix .. ".tex") or ("statuerobobee_map_full_icebox" .. inst.robobeeSkinSuffix .. ".tex"))
-		inst.SoundEmitter:PlaySound("robobeesounds/robobeesounds/sleep", "zzz") 
-		if inst.components.sanityaura then
-			inst.components.sanityaura.aura = TUNING.SANITYAURA_TINY/2
-		end
-	else 
-		inst.AnimState:PlayAnimation("idle", true)
-		inst.AnimState:Hide("SWAP_ROBOBEE") 
-		inst.MiniMapEntity:SetIcon(STATUEROBOBEE_CONTAINER == "chest" and ("statuerobobee_map" .. inst.robobeeSkinSuffix .. ".tex") or ("statuerobobee_map_icebox" .. inst.robobeeSkinSuffix .. ".tex"))
-		inst.SoundEmitter:KillSound("zzz")
-		if inst.components.sanityaura then
-			inst.components.sanityaura.aura = 0
-		end
+		return true
+	else
+		return false
 	end
+end
+
+local function HandleRobobeeShutdown(inst)
+	inst.AnimState:PlayAnimation("turnoff")
+	inst.AnimState:PushAnimation("off", true)
+	-- PLAY TURN OFF SOUND
+end
+
+local function HandleRobobeeStartup(inst)
+	inst.AnimState:PlayAnimation("turnon")
+	inst.AnimState:PushAnimation("idlehome", true)
+	-- PLAY TURN ON SOUND
+end
+
+local function HandleRobobeeLeave(inst)
+	inst.AnimState:PlayAnimation("idleaway", true)
+	inst.MiniMapEntity:SetIcon(STATUEROBOBEE_CONTAINER == "chest" and ("statuerobobee_map" .. inst.robobeeSkinSuffix .. ".tex") or 
+	                                                                  ("statuerobobee_map_icebox" .. inst.robobeeSkinSuffix .. ".tex"))
+																	  
+	if inst.components.sanityaura then
+		inst.components.sanityaura.aura = 0
+	end
+end
+
+local function HandleRobobeeReturn(inst)
+	inst.AnimState:PlayAnimation("idlehome", true)
+	inst.MiniMapEntity:SetIcon(STATUEROBOBEE_CONTAINER == "chest" and ("statuerobobee_map_full" .. inst.robobeeSkinSuffix .. ".tex") or 
+																	  ("statuerobobee_map_full_icebox" .. inst.robobeeSkinSuffix .. ".tex"))
+	inst.SoundEmitter:PlaySound("robobeesounds/robobeesounds/sleep", "zzz")
+
+	if inst.components.sanityaura then
+		inst.components.sanityaura.aura = TUNING.SANITYAURA_TINY/2
+	end	
 end
 
 local function UpdateContainerTable(inst)
@@ -56,14 +72,18 @@ end
 local function OnRobobeeSpawned(inst, child)
 	if inst.components.childspawner and child.components.follower and child.components.follower.leader ~= inst then
 		child.components.follower:SetLeader(inst)
-		inst:DoTaskInTime(0, function(inst) UpdateSwapBee(inst) end) -- Delay call until next frame because inst.components.childspawner.numchildrenoutside doesn't update until after this func
+		HandleRobobeeLeave(inst)
 		--print("Spawned Bee")
 	end
 end
 
 local function OnRobobeeBackHome(inst, child)
 	if child and child.components.inventory then
-		inst:DoTaskInTime(0, function(inst) UpdateSwapBee(inst) end) -- Delay call until next frame because inst.components.childspawner.numchildrenoutside doesn't update until after this func
+		if inst.on then
+			HandleRobobeeReturn(inst)
+		else
+			HandleRobobeeShutdown(inst)
+		end
 		
 		if child.components.inventory:NumItems() ~= 0 then
 			-- transfer items to base
@@ -150,10 +170,19 @@ local function PreventSpawn(inst)
 end
 
 local function OnHit(inst, worker, workleft)
-
 	if not inst:HasTag("burnt") then
-		inst.AnimState:PlayAnimation("hit")
-		inst.AnimState:PushAnimation("idle", true)
+		if RobobeeIsHome(inst) then
+			if inst.on then
+				inst.AnimState:PlayAnimation("hitidlehome")
+				inst.AnimState:PushAnimation("idlehome", true)
+			else
+				inst.AnimState:PlayAnimation("hitoff")
+				inst.AnimState:PushAnimation("off", true)
+			end
+		else
+			inst.AnimState:PlayAnimation("hitidleaway")
+			inst.AnimState:PushAnimation("idleaway", true)
+		end
 	end
 	
 	local inv = inst.components.container
@@ -232,7 +261,7 @@ end
 
 local function OnBuilt(inst)
 	inst.AnimState:PlayAnimation("building")
-	inst.AnimState:PushAnimation("idle", true)
+	inst.AnimState:PushAnimation("idlehome", true)
 end
 
 local function MakeSureHasChild(inst)
@@ -248,13 +277,13 @@ local function MakeSureHasChild(inst)
 			inst.components.childspawner.childrenoutside = {}
 			inst.components.childspawner.numchildrenoutside = 0
 			inst.components.childspawner.childreninside = 1
-			UpdateSwapBee(inst)
+			HandleRobobeeReturn(inst)
 		end
 	-- In case there's no bee inside nor outside, force add it
 	elseif inst.components.childspawner and inst.components.childspawner.numchildrenoutside <= 0 and inst.components.childspawner.childreninside <= 0 then
 		inst.components.childspawner.numchildrenoutside = 0
 		inst.components.childspawner.childreninside = 1
-		UpdateSwapBee(inst)
+		HandleRobobeeReturn(inst)
 	end
 end
 
@@ -311,23 +340,24 @@ local function TurnOff(inst, instant)
 		end
 	end
 	
-	if inst.components.childspawner and inst.components.childspawner.numchildrenoutside <= 0 then
-		UpdateSwapBee(inst)
+	if RobobeeIsHome(inst) then
+		HandleRobobeeShutdown(inst)
 	end
 end
 
 local function TurnOn(inst, instant)
 	inst.on = true
 	
-	if inst.components.childspawner and inst.components.childspawner.numchildrenoutside <= 0 then
-		UpdateSwapBee(inst)
+	if RobobeeIsHome(inst) then
+		HandleRobobeeStartup(inst)
 	end
 end
 
-local function updateskinsuffix(inst, suffix)
+local function overrideskinsuffix(inst, suffix)
 	inst.robobeeSkinSuffix = suffix
 
-	inst.MiniMapEntity:SetIcon(STATUEROBOBEE_CONTAINER == "chest" and ("statuerobobee_map_" .. suffix ..".tex") or ("statuerobobee_map_icebox" .. suffix .. ".tex"))
+	inst.MiniMapEntity:SetIcon(STATUEROBOBEE_CONTAINER == "chest" and ("statuerobobee_map_full" .. suffix ..".tex") or 
+																	  ("statuerobobee_map_full_icebox" .. suffix .. ".tex"))
 
 	inst.AnimState:SetBank("statuerobobee" .. suffix)
 	inst.AnimState:SetBuild("statuerobobee" .. suffix)
@@ -354,11 +384,11 @@ local function fn()
 	MakeObstaclePhysics(inst, .5)
 
 	inst.MiniMapEntity:SetPriority(5)
-	inst.MiniMapEntity:SetIcon(STATUEROBOBEE_CONTAINER == "chest" and "statuerobobee_map.tex" or "statuerobobee_map_icebox.tex")
-
+	inst.MiniMapEntity:SetIcon(STATUEROBOBEE_CONTAINER == "chest" and ("statuerobobee_map_full.tex") or 
+																	  ("statuerobobee_map_full_icebox.tex"))
 	inst.AnimState:SetBank("statuerobobee")
 	inst.AnimState:SetBuild("statuerobobee")
-	inst.AnimState:PlayAnimation("idle", true)
+	inst.AnimState:PlayAnimation("idlehome", true)
 	inst.AnimState:OverrideSymbol("chest", "statuerobobee", STATUEROBOBEE_CONTAINER)
 	
 	inst:AddTag("statue")
@@ -404,7 +434,7 @@ local function fn()
 	inst:AddComponent("lootdropper")
 	
 	inst:AddComponent("sanityaura")
-	inst.components.sanityaura.aura = 0
+	inst.components.sanityaura.aura = TUNING.SANITYAURA_TINY/2
 
 	inst:AddComponent("machine")
 	inst.components.machine.turnonfn = TurnOn
@@ -424,7 +454,6 @@ local function fn()
 	
 		if TheWorld.Map:IsPassableAtPoint(pt.x, pt.y, pt.z, false, true) then
 			UpdateContainerTable(inst) 
-			UpdateSwapBee(inst)
 			MakeSureHasChild(inst)
 		else
 			--G10MM-3R Statue CANNOT be spawned in ANY CASE in an invalid area
@@ -439,14 +468,14 @@ end
 
 local function fn_78()
 	local inst = fn()
-	updateskinsuffix(inst, "_78")
+	overrideskinsuffix(inst, "_78")
 
 	return inst
 end
 
 local function fn_caterpillar()
 	local inst = fn()
-	updateskinsuffix(inst, "_caterpillar")
+	overrideskinsuffix(inst, "_caterpillar")
 
 	return inst
 end
