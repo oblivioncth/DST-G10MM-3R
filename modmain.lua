@@ -30,12 +30,6 @@ Assets = {
 	Asset("IMAGE", "images/map_icons/robobee.tex"),
 
 	--skinned version:
-	Asset("ATLAS", "images/inventoryimages/statuerobobee_78.xml"),
-	Asset("IMAGE", "images/inventoryimages/statuerobobee_78.tex"),
-
-	Asset("ATLAS", "images/inventoryimages/statuerobobee_icebox_78.xml"),
-	Asset("IMAGE", "images/inventoryimages/statuerobobee_icebox_78.tex"),
-
 	Asset("ATLAS", "images/map_icons/statuerobobee_map_78.xml"),
 	Asset("IMAGE", "images/map_icons/statuerobobee_map_78.tex"),
 
@@ -52,11 +46,6 @@ Assets = {
 	Asset("IMAGE", "images/map_icons/robobee_78.tex"),
 
 	--skinned version#2:
-	Asset("ATLAS", "images/inventoryimages/statuerobobee_caterpillar.xml"),
-	Asset("IMAGE", "images/inventoryimages/statuerobobee_caterpillar.tex"),
-
-	Asset("ATLAS", "images/inventoryimages/statuerobobee_icebox_caterpillar.xml"),
-	Asset("IMAGE", "images/inventoryimages/statuerobobee_icebox_caterpillar.tex"),
 
 	Asset("ATLAS", "images/map_icons/statuerobobee_map_caterpillar.xml"),
 	Asset("IMAGE", "images/map_icons/statuerobobee_map_caterpillar.tex"),
@@ -358,19 +347,19 @@ nil,
 nil,
 nil,
 "images/inventoryimages/" .. imageatlas .. ".xml",
-"statuerobobee.tex")
+"statuerobobee")
 statuerecipe.sortkey = -99
 statuerecipe.skinnable = true
 
 -- Add Skins
 MadeRecipeSkinnable("statuerobobee", {
 	statuerobobee_78 = {
-		atlas = "images/inventoryimages/" .. imageatlas .. "_78.xml",
-		image = "statuerobobee_78.tex",
+		atlas = "images/inventoryimages/" .. imageatlas .. ".xml",
+		image = "statuerobobee_78",
 	},
 	statuerobobee_caterpillar = {
-		atlas = "images/inventoryimages/" .. imageatlas .. "_caterpillar.xml",
-		image = "statuerobobee_caterpillar.tex",
+		atlas = "images/inventoryimages/" .. imageatlas .. ".xml",
+		image = "statuerobobee_caterpillar",
 	},
 })
 
