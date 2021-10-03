@@ -498,11 +498,16 @@ local oldwidgetsetup = containers.widgetsetup
 mods=GLOBAL.rawget(GLOBAL,"mods")or(function()local m={}GLOBAL.rawset(GLOBAL,"mods",m)return m end)()
 mods.old_widgetsetup = mods.old_widgetsetup or containers.smartercrockpot_old_widgetsetup or oldwidgetsetup
 containers.widgetsetup = function(container, prefab, ...)
-	if ((not prefab and container and container.inst and container.inst.prefab == "statuerobobee") or (prefab and container and container.inst and container.inst.prefab == "statuerobobee")) or
-		((not prefab and container and container.inst and container.inst.prefab == "statuerobobee_78") or (prefab and container and container.inst and container.inst.prefab == "statuerobobee_78")) or
-		((not prefab and container and container.inst and container.inst.prefab == "statuerobobee_caterpillar") or (prefab and container and container.inst and container.inst.prefab == "statuerobobee_caterpillar")) then
-		prefab = "treasurechest"
+	local beeBasenameLen = string.len("statuerobobee")
+	
+	if container and container.inst and container.inst.prefab and string.len(container.inst.prefab) >= beeBasenameLen then
+		local baseName = string.sub(container.inst.prefab, 1, beeBasenameLen)
+		
+		if baseName == "statuerobobee" then
+			prefab = "treasurechest" -- From testing, this code doesn't ever actually seem to be hit
+		end
 	end
+
 	oldwidgetsetup(container, prefab, ...)
 end
 
