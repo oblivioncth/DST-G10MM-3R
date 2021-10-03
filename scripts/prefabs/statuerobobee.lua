@@ -55,15 +55,12 @@ end
 local function UpdateContainerTable(inst)
 	local inv = inst.components.container
 	
-	local allslots = {1, 2, 3, 4, 5, 6, 7, 8, 9}
-	
-	for k, v in pairs (allslots) do
-		inst.AnimState:OverrideSymbol(tostring(k), "statuerobobee" .. inst.robobeeSkinSuffix, "blank_frame")
-	end
-	
 	for k, v in pairs(inv.slots) do
+		local numStr = tostring(k)
 		if v ~= nil then
-			inst.AnimState:OverrideSymbol(tostring(k), "statuerobobee" .. inst.robobeeSkinSuffix, tostring(k))
+			inst.AnimState:OverrideSymbol(numStr, "statuerobobee" .. inst.robobeeSkinSuffix, numStr)
+		else
+			inst.AnimState:OverrideSymbol(numStr, "statuerobobee" .. inst.robobeeSkinSuffix, "blank_frame")
 		end
 	end
 	
