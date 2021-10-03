@@ -54,16 +54,16 @@ end
 
 local function UpdateContainerTable(inst)
 	local inv = inst.components.container
-	
-	for k, v in pairs(inv.slots) do
-		local numStr = tostring(k)
-		if v ~= nil then
+
+	for i = 1, 9 do
+		local numStr = tostring(i)
+
+		if inv.slots[i] ~= nil then
 			inst.AnimState:OverrideSymbol(numStr, "statuerobobee" .. inst.robobeeSkinSuffix, numStr)
 		else
 			inst.AnimState:OverrideSymbol(numStr, "statuerobobee" .. inst.robobeeSkinSuffix, "blank_frame")
 		end
 	end
-	
 end
 
 local function OnRobobeeSpawned(inst, child)
